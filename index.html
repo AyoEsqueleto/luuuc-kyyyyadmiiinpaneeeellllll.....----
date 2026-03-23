@@ -7,7 +7,6 @@
 <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<link rel="icon" href="https://luckybase.es/favicon.ico" type="image/x-icon">
 <title>Admin Panel | LuckyBase</title>
 <style>
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Sora:wght@500;600;700;800&display=swap");
@@ -1044,7 +1043,7 @@ button:disabled{
 <body>
 <main>
   <h1>LuckyBase Admin</h1>
-  <p class="headline-subtitle">Panel general de control.</p>
+  <p class="headline-subtitle">Panel general de control: resumen, clientes, tickets y estado de infraestructura.</p>
 
   <section id="loginCard" class="card">
     <h2 style="margin:0 0 10px;font-size:18px;">Acceso administrador</h2>
@@ -1152,6 +1151,9 @@ button:disabled{
                 <label>Dominio
                   <input id="newClientDominio" type="text" maxlength="160" placeholder="midominio.com">
                 </label>
+                <label>Proveedor dominio
+                  <input id="newClientDomprov" type="text" maxlength="160" placeholder="Cloudflare, GoDaddy, etc.">
+                </label>
                 <label>Cuota
                   <select id="newClientCuota"></select>
                 </label>
@@ -1162,6 +1164,12 @@ button:disabled{
                   <select id="newClientPagado">
                     <option value="No abonado">No abonado</option>
                     <option value="Abonado">Abonado</option>
+                  </select>
+                </label>
+                <label>Panel
+                  <select id="newClientPanel">
+                    <option value="no">No</option>
+                    <option value="si">Sí</option>
                   </select>
                 </label>
                 <label>Nº pedido
@@ -1227,7 +1235,9 @@ button:disabled{
                     <th>Correo</th>
                     <th>Plan</th>
                     <th>Tipo plan</th>
+                    <th>Dom. prov.</th>
                     <th>Pago</th>
+                    <th>Panel</th>
                     <th>Próximo pago</th>
                     <th>Fecha alta</th>
                     <th>Acciones</th>
@@ -1390,6 +1400,9 @@ button:disabled{
         <label>Dominio
           <input id="editClientDominio" type="text" maxlength="160">
         </label>
+        <label>Proveedor dominio
+          <input id="editClientDomprov" type="text" maxlength="160">
+        </label>
         <label>Cuota
           <select id="editClientCuota"></select>
         </label>
@@ -1400,6 +1413,12 @@ button:disabled{
           <select id="editClientPagado">
             <option value="No abonado">No abonado</option>
             <option value="Abonado">Abonado</option>
+          </select>
+        </label>
+        <label>Panel
+          <select id="editClientPanel">
+            <option value="no">No</option>
+            <option value="si">Sí</option>
           </select>
         </label>
         <label>Fecha alta
@@ -1414,6 +1433,8 @@ button:disabled{
       </div>
       <div class="row" style="margin-top:10px;">
         <button class="btn-primary" type="submit">Guardar cambios</button>
+        <button id="editClientEnablePanelBtn" class="btn-muted" type="button">Cambiar panel a Sí</button>
+        <button id="editClientResetPasswordBtn" class="btn-muted" type="button">Generar y guardar contraseña</button>
       </div>
       <div id="clientEditFeedback" class="feedback"></div>
     </form>
@@ -1725,13 +1746,18 @@ function renderClientsTable(clients){
   const tbody = document.getElementById("clientsTableBody")
   const list = Array.isArray(clients) ? clients : []
   if(!list.length){
-    tbody.innerHTML = '<tr><td colspan="10" class="empty-state">No hay clientes con ese filtro.</td></tr>'
+    tbody.innerHTML = '<tr><td colspan="12" class="empty-state">No hay clientes con ese filtro.</td></tr>'
     return
   }
 
   tbody.innerHTML = list.map((c) => {
     const rowIndex = Number(c.rowIndex || 0)
+    const panelEnabled = normalizeText(c.panel) === "si"
+    const panelState = panelEnabled ? "Sí" : "No"
     const isSelected = !!selectedClientRows[rowIndex]
+    const quickPanelBtn = panelEnabled
+      ? ""
+      : '<button class="btn-row-muted client-panel-enable-btn" type="button" data-row-index="' + escapeHtml(String(rowIndex)) + '">Panel a Sí</button>'
     return '<tr>' +
       '<td><input class="client-select-row" type="checkbox" data-row-index="' + escapeHtml(String(rowIndex)) + '"' + (isSelected ? ' checked' : '') + '></td>' +
       '<td>' + escapeHtml(c.usuario || "-") + '</td>' +
@@ -1739,10 +1765,13 @@ function renderClientsTable(clients){
       '<td>' + escapeHtml(c.email || "-") + '</td>' +
       '<td>' + escapeHtml(c.plan || "-") + '</td>' +
       '<td>' + escapeHtml(c.tipoplan || "-") + '</td>' +
+      '<td>' + escapeHtml(c.domprov || "-") + '</td>' +
       '<td>' + escapeHtml(c.pagado || "-") + '</td>' +
+      '<td>' + escapeHtml(panelState) + '</td>' +
       '<td>' + escapeHtml(c.proxpago || "-") + '</td>' +
       '<td>' + escapeHtml(c.fealta || "-") + '</td>' +
       '<td><div class="table-actions">' +
+        quickPanelBtn +
         '<button class="btn-row-muted client-detail-btn" type="button" data-row-index="' + escapeHtml(String(rowIndex)) + '" data-usuario="' + escapeHtml(c.usuario || "") + '" data-email="' + escapeHtml(c.email || "") + '">Ver / editar</button>' +
         '<button class="btn-row-danger client-delete-btn" type="button" data-row-index="' + escapeHtml(String(rowIndex)) + '" data-usuario="' + escapeHtml(c.usuario || "") + '" data-email="' + escapeHtml(c.email || "") + '">Eliminar</button>' +
       '</div></td>' +
@@ -1775,6 +1804,8 @@ function applyClientFilters(){
       c.email,
       c.plan,
       c.tipoplan,
+      c.domprov,
+      c.panel,
       c.pagado,
       c.proxpago,
       c.fealta
@@ -2017,9 +2048,11 @@ function readNewClientFormData(){
     plan: String(document.getElementById("newClientPlan").value || "").trim(),
     tipoplan: String(document.getElementById("newClientTipoPlan").value || "").trim(),
     dominio: String(document.getElementById("newClientDominio").value || "").trim(),
+    domprov: String(document.getElementById("newClientDomprov").value || "").trim(),
     cuota: String(document.getElementById("newClientCuota").value || "").trim(),
     consultasocambiosrestantes: String(document.getElementById("newClientConsultas").value || "").trim(),
     pagado: String(document.getElementById("newClientPagado").value || "").trim(),
+    panel: String(document.getElementById("newClientPanel").value || "no").trim(),
     fealta: ""
   }
 }
@@ -2202,7 +2235,15 @@ function fillClientEditForm(client){
   document.getElementById("editClientPlan").value = String(data.plan || "basic")
   document.getElementById("editClientTipoPlan").value = "LuckyWeb"
   document.getElementById("editClientDominio").value = String(data.dominio || "")
+  document.getElementById("editClientDomprov").value = String(data.domprov || "")
   document.getElementById("editClientPagado").value = normalizeText(data.pagado) === "abonado" ? "Abonado" : "No abonado"
+  document.getElementById("editClientPanel").value = normalizeText(data.panel) === "si" ? "si" : "no"
+  const panelBtn = document.getElementById("editClientEnablePanelBtn")
+  if(panelBtn){
+    const panelAlreadyEnabled = normalizeText(data.panel) === "si"
+    panelBtn.disabled = panelAlreadyEnabled
+    panelBtn.textContent = panelAlreadyEnabled ? "Panel ya en Sí" : "Cambiar panel a Sí"
+  }
   document.getElementById("editClientFealta").value = toInputDateValue(data.fealta)
   document.getElementById("editClientNpedido").value = String(data.npedido || "")
   document.getElementById("editClientProxpago").value = String(data.proxpago || "")
@@ -2221,10 +2262,133 @@ function readEditClientFormData(){
     plan: String(document.getElementById("editClientPlan").value || "").trim(),
     tipoplan: "LuckyWeb",
     dominio: String(document.getElementById("editClientDominio").value || "").trim(),
+    domprov: String(document.getElementById("editClientDomprov").value || "").trim(),
     cuota: String(document.getElementById("editClientCuota").value || "").trim(),
     consultasocambiosrestantes: String(document.getElementById("editClientConsultas").value || "").trim(),
     pagado: String(document.getElementById("editClientPagado").value || "").trim(),
+    panel: String(document.getElementById("editClientPanel").value || "no").trim(),
     fealta: String(document.getElementById("editClientFealta").value || "").trim()
+  }
+}
+
+function secureRandomInt(max){
+  const upperBound = Math.max(1, Number(max) || 1)
+  if(window.crypto && typeof window.crypto.getRandomValues === "function"){
+    const array = new Uint32Array(1)
+    window.crypto.getRandomValues(array)
+    return array[0] % upperBound
+  }
+  return Math.floor(Math.random() * upperBound)
+}
+
+function generateRandomClientPassword(length){
+  const targetLength = Math.max(12, Number(length) || 14)
+  const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ"
+  const lower = "abcdefghijkmnopqrstuvwxyz"
+  const digits = "23456789"
+  const symbols = "!@#$%*+-_?"
+  const all = upper + lower + digits + symbols
+  const chars = []
+
+  chars.push(upper.charAt(secureRandomInt(upper.length)))
+  chars.push(lower.charAt(secureRandomInt(lower.length)))
+  chars.push(digits.charAt(secureRandomInt(digits.length)))
+  chars.push(symbols.charAt(secureRandomInt(symbols.length)))
+
+  while(chars.length < targetLength){
+    chars.push(all.charAt(secureRandomInt(all.length)))
+  }
+
+  for(let i = chars.length - 1; i > 0; i -= 1){
+    const j = secureRandomInt(i + 1)
+    const tmp = chars[i]
+    chars[i] = chars[j]
+    chars[j] = tmp
+  }
+
+  return chars.join("")
+}
+
+async function quickUpdateClientByRow_(rowIndex, patch){
+  const session = readSession()
+  if(!session || !session.adminToken){
+    throw new Error("Sesión admin no válida.")
+  }
+  const numericRowIndex = Number(rowIndex || 0)
+  if(!Number.isFinite(numericRowIndex) || numericRowIndex <= 1){
+    throw new Error("Fila de cliente no válida.")
+  }
+
+  const payload = Object.assign({
+    action: "admin_update_client",
+    adminToken: session.adminToken,
+    rowIndex: numericRowIndex
+  }, patch || {})
+
+  const result = await apiPostRequest(payload, API_TIMEOUT_MS)
+  if(!result || result.success !== true || !result.client){
+    throw new Error((result && result.message) ? result.message : "No se pudo actualizar el cliente.")
+  }
+  return result
+}
+
+async function handleEnablePanelInModal(){
+  const rowIndex = Number(document.getElementById("editClientRowIndex").value || 0)
+  if(!rowIndex){
+    setFeedback("clientEditFeedback", "Fila de cliente no válida.", "error")
+    return
+  }
+  const panelValue = normalizeText(document.getElementById("editClientPanel").value || "no")
+  if(panelValue === "si"){
+    setFeedback("clientEditFeedback", "El panel ya está en Sí.", "ok")
+    return
+  }
+
+  setFeedback("clientEditFeedback", "Activando panel en Sí...")
+  try{
+    const result = await quickUpdateClientByRow_(rowIndex, { panel: "si" })
+    fillClientEditForm(result.client)
+    await loadClient360(result.client.rowIndex, result.client.usuario, result.client.email)
+    await loadClients()
+    setFeedback("clientEditFeedback", "Panel actualizado a Sí.", "ok")
+  }catch(error){
+    setFeedback("clientEditFeedback", String(error && error.message || "No se pudo activar el panel."), "error")
+  }
+}
+
+async function handleGenerateAndSaveClientPassword(){
+  const rowIndex = Number(document.getElementById("editClientRowIndex").value || 0)
+  if(!rowIndex){
+    setFeedback("clientEditFeedback", "Fila de cliente no válida.", "error")
+    return
+  }
+
+  const newPassword = generateRandomClientPassword(14)
+  setFeedback("clientEditFeedback", "Generando y guardando contraseña...")
+  try{
+    const result = await quickUpdateClientByRow_(rowIndex, { password: newPassword })
+    fillClientEditForm(result.client)
+    document.getElementById("editClientPassword").value = newPassword
+    await loadClient360(result.client.rowIndex, result.client.usuario, result.client.email)
+    await loadClients()
+    setFeedback("clientEditFeedback", "Contraseña actualizada: " + newPassword, "ok")
+  }catch(error){
+    setFeedback("clientEditFeedback", String(error && error.message || "No se pudo actualizar la contraseña."), "error")
+  }
+}
+
+async function handleEnablePanelFromTable(rowIndex){
+  setFeedback("clientsFeedback", "Activando panel del cliente...")
+  try{
+    const result = await quickUpdateClientByRow_(rowIndex, { panel: "si" })
+    const currentRowIndex = Number(document.getElementById("editClientRowIndex").value || 0)
+    if(currentRowIndex && currentRowIndex === Number(result.client.rowIndex || 0)){
+      fillClientEditForm(result.client)
+    }
+    await loadClients()
+    setFeedback("clientsFeedback", "Panel actualizado a Sí.", "ok")
+  }catch(error){
+    setFeedback("clientsFeedback", String(error && error.message || "No se pudo activar el panel."), "error")
   }
 }
 
@@ -2303,9 +2467,11 @@ async function handleUpdateClient(event){
       plan: payload.plan,
       tipoplan: payload.tipoplan,
       dominio: payload.dominio,
+      domprov: payload.domprov,
       cuota: payload.cuota,
       consultasocambiosrestantes: payload.consultasocambiosrestantes,
       pagado: payload.pagado,
+      panel: payload.panel,
       fealta: payload.fealta
     }, API_TIMEOUT_MS)
 
@@ -2316,7 +2482,13 @@ async function handleUpdateClient(event){
 
     fillClientEditForm(result.client)
     await loadClient360(result.client.rowIndex, result.client.usuario, result.client.email)
-    setFeedback("clientEditFeedback", "Cliente actualizado correctamente.", "ok")
+    let lifecycleMsg = ""
+    if(result.welcomeSent === true){
+      lifecycleMsg = " Credenciales enviadas."
+    }else if(result.orderSent === true){
+      lifecycleMsg = " Pedido enviado."
+    }
+    setFeedback("clientEditFeedback", "Cliente actualizado correctamente." + lifecycleMsg, "ok")
     await loadClients()
   }catch(error){
     setFeedback("clientEditFeedback", "Error actualizando cliente (" + String(error && error.message || "ERROR") + ").", "error")
@@ -2361,9 +2533,11 @@ async function handleCreateClient(event){
       plan: payload.plan,
       tipoplan: payload.tipoplan,
       dominio: payload.dominio,
+      domprov: payload.domprov,
       cuota: payload.cuota,
       consultasocambiosrestantes: payload.consultasocambiosrestantes,
       pagado: payload.pagado,
+      panel: payload.panel,
       fealta: payload.fealta
     }, API_TIMEOUT_MS)
 
@@ -2377,10 +2551,19 @@ async function handleCreateClient(event){
     const passMsg = generatedPassword ? (" Contraseña generada: " + generatedPassword) : ""
     const orderMsg = orderId ? (" Nº pedido: " + orderId + ".") : ""
     const planNoticeMsg = (result.planAddedNoticeSent === true) ? " Aviso de nuevo plan enviado al cliente." : ""
-    const onboardingMsg = (result.welcomeSent === true)
-      ? " Bienvenida enviada."
-      : " Cliente creado, pero no se pudo enviar bienvenida automática."
-    setFeedback("clientCreateFeedback", "Cliente creado correctamente." + orderMsg + passMsg + planNoticeMsg + onboardingMsg, result.welcomeSent === true ? "ok" : "error")
+    const welcomeSent = result.welcomeSent === true
+    const orderSent = result.orderSent === true
+    let onboardingMsg = ""
+    let feedbackType = "ok"
+    if(welcomeSent){
+      onboardingMsg = " Credenciales enviadas."
+    }else if(orderSent){
+      onboardingMsg = " Pedido enviado. Las credenciales se enviarán cuando panel=si."
+    }else{
+      onboardingMsg = " Cliente creado, pero sin envío automático (revisa panel y datos)."
+      feedbackType = "error"
+    }
+    setFeedback("clientCreateFeedback", "Cliente creado correctamente." + orderMsg + passMsg + planNoticeMsg + onboardingMsg, feedbackType)
     document.getElementById("clientCreateForm").reset()
     syncCreateClientPlanFields()
     setFeedback("newClientLookupFeedback", "")
@@ -3104,6 +3287,14 @@ function bindEvents(){
     applyClientFilters()
   })
   document.getElementById("clientsTableBody").addEventListener("click", (event) => {
+    const panelEnableBtn = event.target.closest(".client-panel-enable-btn")
+    if(panelEnableBtn){
+      const rowIndex = Number(panelEnableBtn.getAttribute("data-row-index") || 0)
+      if(!rowIndex) return
+      handleEnablePanelFromTable(rowIndex)
+      return
+    }
+
     const detailBtn = event.target.closest(".client-detail-btn")
     if(detailBtn){
       const rowIndex = Number(detailBtn.getAttribute("data-row-index") || 0)
@@ -3132,6 +3323,8 @@ function bindEvents(){
     }
   })
   document.getElementById("clientEditForm").addEventListener("submit", handleUpdateClient)
+  document.getElementById("editClientEnablePanelBtn").addEventListener("click", handleEnablePanelInModal)
+  document.getElementById("editClientResetPasswordBtn").addEventListener("click", handleGenerateAndSaveClientPassword)
   document.getElementById("editClientPlan").addEventListener("change", () => syncEditClientPlanFields())
   document.getElementById("editClientCuota").addEventListener("change", () => syncEditClientPlanFields())
 
