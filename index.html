@@ -1161,6 +1161,12 @@ button:disabled{
                 <label>Consultas restantes
                   <select id="newClientConsultas"></select>
                 </label>
+                <label>Flujos activos
+                  <input id="newClientFlujosActivos" type="number" min="0" step="1" inputmode="numeric" placeholder="Solo LuckyAuto">
+                </label>
+                <label>Flujos inactivos
+                  <input id="newClientFlujosInactivos" type="number" min="0" step="1" inputmode="numeric" placeholder="Solo LuckyAuto">
+                </label>
                 <label>Estado pago
                   <select id="newClientPagado">
                     <option value="No abonado">No abonado</option>
@@ -1236,6 +1242,8 @@ button:disabled{
                     <th>Correo</th>
                     <th>Plan</th>
                     <th>Tipo plan</th>
+                    <th>Flujos activos</th>
+                    <th>Flujos inactivos</th>
                     <th>Dom. prov.</th>
                     <th>Pago</th>
                     <th>Panel</th>
@@ -1411,6 +1419,12 @@ button:disabled{
         <label>Consultas restantes
           <select id="editClientConsultas"></select>
         </label>
+        <label>Flujos activos
+          <input id="editClientFlujosActivos" type="number" min="0" step="1" inputmode="numeric" placeholder="Solo LuckyAuto">
+        </label>
+        <label>Flujos inactivos
+          <input id="editClientFlujosInactivos" type="number" min="0" step="1" inputmode="numeric" placeholder="Solo LuckyAuto">
+        </label>
         <label>Estado pago
           <select id="editClientPagado">
             <option value="No abonado">No abonado</option>
@@ -1471,11 +1485,18 @@ let selectedClientRows = {}
 let newClientLookupTimer = null
 let newClientLookupSeq = 0
 let newClientLookupLastEmail = ""
-const TICKET_REPLY_TEMPLATES = [
+const TICKET_REPLY_TEMPLATES_WEB = [
   { id: "", label: "Sin plantilla", text: "" },
   { id: "ack", label: "Acuse de recibo", text: "Hemos recibido tu solicitud y ya estamos trabajando en ello. Te iremos informando por este mismo canal." },
   { id: "need_info", label: "Solicitar más datos", text: "Para avanzar con tu solicitud necesitamos más información: capturas, URL exacta y pasos para reproducir el problema." },
   { id: "done", label: "Confirmación de resolución", text: "Hemos aplicado los cambios solicitados. Por favor revisa y confirma si todo está correcto para cerrar el ticket." }
+]
+const TICKET_REPLY_TEMPLATES_AUTO = [
+  { id: "", label: "Sin plantilla", text: "" },
+  { id: "ack", label: "Recepción automatización", text: "Hemos recibido tu solicitud de automatización. Vamos a revisar el flujo y te daremos actualización por este mismo ticket." },
+  { id: "need_steps", label: "Pedir trigger/datos", text: "Para continuar necesitamos: trigger exacto, origen de datos, condición de ejecución y resultado esperado del flujo." },
+  { id: "need_logs", label: "Pedir logs IDs", text: "Compártenos IDs de ejecución, hora aproximada del fallo y capturas del historial del flujo para diagnosticarlo." },
+  { id: "done", label: "Flujo actualizado", text: "El ajuste en la automatización está aplicado. Revisa una ejecución real y confirma si cerramos el ticket." }
 ]
 const ADMIN_PLAN_OPTIONS = {
   LuckyWeb: [
@@ -1517,6 +1538,27 @@ function normalizeText(value){
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .trim()
+}
+
+function normalizeTipoPlanValue_(value){
+  const key = normalizeText(value)
+  if(key === "luckyauto" || key === "auto"){
+    return "LuckyAuto"
+  }
+  return "LuckyWeb"
+}
+
+function getTicketTemplateScope_(ticket){
+  const type = normalizeTipoPlanValue_(
+    String(ticket && (ticket.ticketPlanType || ticket.clientPlanType || "")) || "LuckyWeb"
+  )
+  return type === "LuckyAuto" ? "auto" : "web"
+}
+
+function getTicketReplyTemplatesByScope_(scope){
+  return String(scope || "").trim().toLowerCase() === "auto"
+    ? TICKET_REPLY_TEMPLATES_AUTO
+    : TICKET_REPLY_TEMPLATES_WEB
 }
 
 function readAdminTicketSeenMap_(){
@@ -1760,7 +1802,7 @@ function renderClientsTable(clients){
   const tbody = document.getElementById("clientsTableBody")
   const list = Array.isArray(clients) ? clients : []
   if(!list.length){
-    tbody.innerHTML = '<tr><td colspan="12" class="empty-state">No hay clientes con ese filtro.</td></tr>'
+    tbody.innerHTML = '<tr><td colspan="14" class="empty-state">No hay clientes con ese filtro.</td></tr>'
     return
   }
 
@@ -1779,6 +1821,8 @@ function renderClientsTable(clients){
       '<td>' + escapeHtml(c.email || "-") + '</td>' +
       '<td>' + escapeHtml(c.plan || "-") + '</td>' +
       '<td>' + escapeHtml(c.tipoplan || "-") + '</td>' +
+      '<td>' + escapeHtml(c.flujosactivos || "-") + '</td>' +
+      '<td>' + escapeHtml(c.flujosinactivos || "-") + '</td>' +
       '<td>' + escapeHtml(c.domprov || "-") + '</td>' +
       '<td>' + escapeHtml(c.pagado || "-") + '</td>' +
       '<td>' + escapeHtml(panelState) + '</td>' +
@@ -1818,6 +1862,8 @@ function applyClientFilters(){
       c.email,
       c.plan,
       c.tipoplan,
+      c.flujosactivos,
+      c.flujosinactivos,
       c.domprov,
       c.panel,
       c.pagado,
@@ -1886,14 +1932,6 @@ function clearClientSelection_(){
     selectAllEl.checked = false
   }
   applyClientFilters()
-}
-
-function normalizeTipoPlanValue_(value){
-  const key = normalizeText(value)
-  if(key === "luckyauto" || key === "auto"){
-    return "LuckyAuto"
-  }
-  return "LuckyWeb"
 }
 
 function buildPlanOptionsForType_(tipoplan){
@@ -2049,6 +2087,40 @@ function setSelectOptions(selectId, options, preferredValue){
   }
 }
 
+function isValidFlowCountInput_(value){
+  return /^\d+$/.test(String(value || "").trim())
+}
+
+function syncFlowInputsByTipoPlan_(tipoPlanSelectId, activeInputId, inactiveInputId, preferredActive, preferredInactive){
+  const tipoPlanEl = document.getElementById(tipoPlanSelectId)
+  const activeEl = document.getElementById(activeInputId)
+  const inactiveEl = document.getElementById(inactiveInputId)
+  const tipoPlan = normalizeTipoPlanValue_(tipoPlanEl ? tipoPlanEl.value : "LuckyWeb")
+  const isAuto = tipoPlan === "LuckyAuto"
+
+  if(activeEl){
+    if(preferredActive !== undefined){
+      activeEl.value = String(preferredActive || "").trim()
+    }
+    activeEl.disabled = !isAuto
+    activeEl.placeholder = isAuto ? "0" : "Solo LuckyAuto"
+    if(isAuto && !String(activeEl.value || "").trim()){
+      activeEl.value = "0"
+    }
+  }
+
+  if(inactiveEl){
+    if(preferredInactive !== undefined){
+      inactiveEl.value = String(preferredInactive || "").trim()
+    }
+    inactiveEl.disabled = !isAuto
+    inactiveEl.placeholder = isAuto ? "0" : "Solo LuckyAuto"
+    if(isAuto && !String(inactiveEl.value || "").trim()){
+      inactiveEl.value = "0"
+    }
+  }
+}
+
 function applyPlanFieldRules(tipoPlanSelectId, planSelectId, cuotaSelectId, consultasSelectId, preferredPlan, preferredCuota, preferredConsultas){
   const tipoPlanEl = document.getElementById(tipoPlanSelectId)
   const tipoPlan = normalizeTipoPlanValue_(tipoPlanEl ? tipoPlanEl.value : "LuckyWeb")
@@ -2116,24 +2188,32 @@ function applyPlanFieldRules(tipoPlanSelectId, planSelectId, cuotaSelectId, cons
 
 function syncCreateClientPlanFields(preferredPlan, preferredCuota, preferredConsultas){
   applyPlanFieldRules("newClientTipoPlan", "newClientPlan", "newClientCuota", "newClientConsultas", preferredPlan, preferredCuota, preferredConsultas)
+  syncFlowInputsByTipoPlan_("newClientTipoPlan", "newClientFlujosActivos", "newClientFlujosInactivos")
 }
 
-function syncEditClientPlanFields(preferredPlan, preferredCuota, preferredConsultas){
+function syncEditClientPlanFields(preferredPlan, preferredCuota, preferredConsultas, preferredFlujosActivos, preferredFlujosInactivos){
   applyPlanFieldRules("editClientTipoPlan", "editClientPlan", "editClientCuota", "editClientConsultas", preferredPlan, preferredCuota, preferredConsultas)
+  syncFlowInputsByTipoPlan_("editClientTipoPlan", "editClientFlujosActivos", "editClientFlujosInactivos", preferredFlujosActivos, preferredFlujosInactivos)
 }
 
 function readNewClientFormData(){
+  const tipoplan = normalizeTipoPlanValue_(document.getElementById("newClientTipoPlan").value || "LuckyWeb")
+  const isAuto = tipoplan === "LuckyAuto"
+  const flujosActivos = String(document.getElementById("newClientFlujosActivos").value || "").trim()
+  const flujosInactivos = String(document.getElementById("newClientFlujosInactivos").value || "").trim()
   return {
     usuario: String(document.getElementById("newClientUsuario").value || "").trim(),
     nombre: String(document.getElementById("newClientNombre").value || "").trim(),
     email: String(document.getElementById("newClientEmail").value || "").trim(),
     password: String(document.getElementById("newClientPassword").value || "").trim(),
     plan: String(document.getElementById("newClientPlan").value || "").trim(),
-    tipoplan: normalizeTipoPlanValue_(document.getElementById("newClientTipoPlan").value || "LuckyWeb"),
+    tipoplan: tipoplan,
     dominio: String(document.getElementById("newClientDominio").value || "").trim(),
     domprov: String(document.getElementById("newClientDomprov").value || "").trim(),
     cuota: String(document.getElementById("newClientCuota").value || "").trim(),
     consultasocambiosrestantes: String(document.getElementById("newClientConsultas").value || "").trim(),
+    flujosactivos: isAuto ? (flujosActivos || "0") : "",
+    flujosinactivos: isAuto ? (flujosInactivos || "0") : "",
     pagado: String(document.getElementById("newClientPagado").value || "").trim(),
     panel: String(document.getElementById("newClientPanel").value || "no").trim(),
     fealta: ""
@@ -2272,9 +2352,14 @@ function renderClient360(result){
 
   plansEl.innerHTML = plans.length
     ? plans.map((plan) => {
+      const planType = normalizeTipoPlanValue_(plan.tipoplan || "")
+      const isAuto = planType === "LuckyAuto"
+      const flowSummary = isAuto
+        ? (' · Flujos: ' + String(plan.flujosactivos || "0") + ' activos / ' + String(plan.flujosinactivos || "0") + ' inactivos')
+        : ""
       return '<div class="msg client">' +
         '<div class="msg-head"><strong>' + escapeHtml(plan.plan || "-") + '</strong><span>' + escapeHtml(plan.npedido || "-") + '</span></div>' +
-        '<div class="msg-body">Dominio: ' + escapeHtml(plan.dominio || "-") + ' · Próximo pago: ' + escapeHtml(plan.proxpago || "-") + '</div>' +
+        '<div class="msg-body">Tipo: ' + escapeHtml(planType || "-") + ' · Dominio: ' + escapeHtml(plan.dominio || "-") + ' · Próximo pago: ' + escapeHtml(plan.proxpago || "-") + flowSummary + '</div>' +
       '</div>'
     }).join("")
     : '<p class="feedback">Sin planes.</p>'
@@ -2316,7 +2401,13 @@ function fillClientEditForm(client){
   document.getElementById("editClientNombre").value = String(data.nombre || "")
   document.getElementById("editClientPassword").value = String(data.password || "")
   document.getElementById("editClientTipoPlan").value = normalizeTipoPlanValue_(data.tipoplan || "LuckyWeb")
-  syncEditClientPlanFields(data.plan || "basic", data.cuota, data.consultasocambiosrestantes)
+  syncEditClientPlanFields(
+    data.plan || "basic",
+    data.cuota,
+    data.consultasocambiosrestantes,
+    data.flujosactivos,
+    data.flujosinactivos
+  )
   document.getElementById("editClientDominio").value = String(data.dominio || "")
   document.getElementById("editClientDomprov").value = String(data.domprov || "")
   document.getElementById("editClientPagado").value = normalizeText(data.pagado) === "abonado" ? "Abonado" : "No abonado"
@@ -2335,6 +2426,10 @@ function fillClientEditForm(client){
 }
 
 function readEditClientFormData(){
+  const tipoplan = normalizeTipoPlanValue_(document.getElementById("editClientTipoPlan").value || "LuckyWeb")
+  const isAuto = tipoplan === "LuckyAuto"
+  const flujosActivos = String(document.getElementById("editClientFlujosActivos").value || "").trim()
+  const flujosInactivos = String(document.getElementById("editClientFlujosInactivos").value || "").trim()
   return {
     rowIndex: Number(document.getElementById("editClientRowIndex").value || 0),
     usuario: String(document.getElementById("editClientUsuario").value || "").trim(),
@@ -2342,11 +2437,13 @@ function readEditClientFormData(){
     email: String(document.getElementById("editClientEmail").value || "").trim(),
     password: String(document.getElementById("editClientPassword").value || "").trim(),
     plan: String(document.getElementById("editClientPlan").value || "").trim(),
-    tipoplan: normalizeTipoPlanValue_(document.getElementById("editClientTipoPlan").value || "LuckyWeb"),
+    tipoplan: tipoplan,
     dominio: String(document.getElementById("editClientDominio").value || "").trim(),
     domprov: String(document.getElementById("editClientDomprov").value || "").trim(),
     cuota: String(document.getElementById("editClientCuota").value || "").trim(),
     consultasocambiosrestantes: String(document.getElementById("editClientConsultas").value || "").trim(),
+    flujosactivos: isAuto ? (flujosActivos || "0") : "",
+    flujosinactivos: isAuto ? (flujosInactivos || "0") : "",
     pagado: String(document.getElementById("editClientPagado").value || "").trim(),
     panel: String(document.getElementById("editClientPanel").value || "no").trim(),
     fealta: String(document.getElementById("editClientFealta").value || "").trim()
@@ -2535,6 +2632,12 @@ async function handleUpdateClient(event){
     setFeedback("clientEditFeedback", "La contraseña debe tener al menos 8 caracteres.", "error")
     return
   }
+  if(payload.tipoplan === "LuckyAuto"){
+    if(!isValidFlowCountInput_(payload.flujosactivos) || !isValidFlowCountInput_(payload.flujosinactivos)){
+      setFeedback("clientEditFeedback", "En LuckyAuto, flujos activos e inactivos deben ser números enteros (0 o mayor).", "error")
+      return
+    }
+  }
 
   setFeedback("clientEditFeedback", "Guardando cambios...")
   try{
@@ -2552,6 +2655,8 @@ async function handleUpdateClient(event){
       domprov: payload.domprov,
       cuota: payload.cuota,
       consultasocambiosrestantes: payload.consultasocambiosrestantes,
+      flujosactivos: payload.flujosactivos,
+      flujosinactivos: payload.flujosinactivos,
       pagado: payload.pagado,
       panel: payload.panel,
       fealta: payload.fealta
@@ -2602,6 +2707,12 @@ async function handleCreateClient(event){
     setFeedback("clientCreateFeedback", "Si defines contraseña manual, mínimo 8 caracteres.", "error")
     return
   }
+  if(payload.tipoplan === "LuckyAuto"){
+    if(!isValidFlowCountInput_(payload.flujosactivos) || !isValidFlowCountInput_(payload.flujosinactivos)){
+      setFeedback("clientCreateFeedback", "En LuckyAuto, flujos activos e inactivos deben ser números enteros (0 o mayor).", "error")
+      return
+    }
+  }
 
   setFeedback("clientCreateFeedback", "Creando cliente...")
   try{
@@ -2618,6 +2729,8 @@ async function handleCreateClient(event){
       domprov: payload.domprov,
       cuota: payload.cuota,
       consultasocambiosrestantes: payload.consultasocambiosrestantes,
+      flujosactivos: payload.flujosactivos,
+      flujosinactivos: payload.flujosinactivos,
       pagado: payload.pagado,
       panel: payload.panel,
       fealta: payload.fealta
@@ -2719,6 +2832,8 @@ function ticketCardHtml(ticket, seenMap){
   const openingMessage = truncateText(ticket.mensaje || "", 260) || "-"
   const messages = Array.isArray(ticket.messages) ? ticket.messages : []
   const latestMessage = messages.length ? truncateText(messages[messages.length - 1].message || "", 260) : openingMessage
+  const templateScope = getTicketTemplateScope_(ticket)
+  const replyTemplates = getTicketReplyTemplatesByScope_(templateScope)
   const lastMessageMeta = getTicketLastMessageMetaAdmin_(ticket)
   const hasNewIncoming = isTicketNewForAdmin_(ticket, seenMap)
   const messagesHtml = renderMessages(messages)
@@ -2737,7 +2852,7 @@ function ticketCardHtml(ticket, seenMap){
     const selected = normalizeText(value) === internalStatus ? " selected" : ""
     return '<option value="' + escapeHtml(value) + '"' + selected + '>' + escapeHtml(label) + '</option>'
   }).join("")
-  const templateOptions = TICKET_REPLY_TEMPLATES.map((tpl) => {
+  const templateOptions = replyTemplates.map((tpl) => {
     return '<option value="' + escapeHtml(tpl.id) + '">' + escapeHtml(tpl.label) + '</option>'
   }).join("")
   const slaBadges = []
@@ -2755,7 +2870,7 @@ function ticketCardHtml(ticket, seenMap){
   }
   const detailSummaryLabel = isClosed ? "Ticket cerrado: abrir conversación e historial" : "Ver chat completo y responder"
 
-  return '<article class="ticket ' + (isClosed ? 'is-closed ' : '') + (hasNewIncoming ? 'has-new' : '') + '" data-ticket-id="' + escapeHtml(ticket.ticketId || "") + '" data-status="' + escapeHtml(status) + '">' +
+  return '<article class="ticket ' + (isClosed ? 'is-closed ' : '') + (hasNewIncoming ? 'has-new' : '') + '" data-ticket-id="' + escapeHtml(ticket.ticketId || "") + '" data-template-scope="' + escapeHtml(templateScope) + '" data-status="' + escapeHtml(status) + '">' +
     '<div class="ticket-top">' +
       '<div>' +
         '<div class="ticket-title">' + escapeHtml(ticket.asunto || "-") + '</div>' +
@@ -2933,7 +3048,9 @@ function renderTickets(tickets){
         return
       }
       const templateId = String(templateEl.value || "")
-      const template = TICKET_REPLY_TEMPLATES.find((tpl) => tpl.id === templateId)
+      const templateScope = String(article.getAttribute("data-template-scope") || "web")
+      const templates = getTicketReplyTemplatesByScope_(templateScope)
+      const template = templates.find((tpl) => tpl.id === templateId)
       if(!template || !template.text){
         return
       }
