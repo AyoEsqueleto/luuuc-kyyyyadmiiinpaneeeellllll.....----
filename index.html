@@ -1146,6 +1146,7 @@ button:disabled{
                 <label>Tipo plan
                   <select id="newClientTipoPlan">
                     <option value="LuckyWeb">LuckyWeb</option>
+                    <option value="LuckyAuto">LuckyAuto</option>
                   </select>
                 </label>
                 <label>Dominio
@@ -1395,6 +1396,7 @@ button:disabled{
         <label>Tipo plan
           <select id="editClientTipoPlan">
             <option value="LuckyWeb">LuckyWeb</option>
+            <option value="LuckyAuto">LuckyAuto</option>
           </select>
         </label>
         <label>Dominio
@@ -1475,6 +1477,18 @@ const TICKET_REPLY_TEMPLATES = [
   { id: "need_info", label: "Solicitar más datos", text: "Para avanzar con tu solicitud necesitamos más información: capturas, URL exacta y pasos para reproducir el problema." },
   { id: "done", label: "Confirmación de resolución", text: "Hemos aplicado los cambios solicitados. Por favor revisa y confirma si todo está correcto para cerrar el ticket." }
 ]
+const ADMIN_PLAN_OPTIONS = {
+  LuckyWeb: [
+    { value: "basic", label: "basic · 3,50€/mes o 6,50€/mes" },
+    { value: "corporativa", label: "corporativa · 5,50€/mes" },
+    { value: "ecommerce", label: "ecommerce · 20,00€/mes" }
+  ],
+  LuckyAuto: [
+    { value: "basic", label: "basic · 120€ + 15€/mes" },
+    { value: "pro", label: "pro · 350€ + 30€/mes" },
+    { value: "lucky", label: "lucky · 650€ + 60€/mes" }
+  ]
+}
 
 function escapeHtml(value){
   return String(value || "")
@@ -1874,6 +1888,48 @@ function clearClientSelection_(){
   applyClientFilters()
 }
 
+function normalizeTipoPlanValue_(value){
+  const key = normalizeText(value)
+  if(key === "luckyauto" || key === "auto"){
+    return "LuckyAuto"
+  }
+  return "LuckyWeb"
+}
+
+function buildPlanOptionsForType_(tipoplan){
+  const type = normalizeTipoPlanValue_(tipoplan)
+  return Array.isArray(ADMIN_PLAN_OPTIONS[type]) ? ADMIN_PLAN_OPTIONS[type] : ADMIN_PLAN_OPTIONS.LuckyWeb
+}
+
+function buildBulkPlanOptions_(){
+  const list = []
+  ;["LuckyWeb", "LuckyAuto"].forEach((type) => {
+    const options = buildPlanOptionsForType_(type)
+    options.forEach((option) => {
+      list.push({
+        value: type + "|" + String(option.value || ""),
+        label: type + " · " + String(option.label || option.value || "")
+      })
+    })
+  })
+  return list
+}
+
+function parseBulkPlanValue_(value){
+  const raw = String(value || "").trim()
+  const parts = raw.split("|")
+  if(parts.length !== 2){
+    return {
+      tipoplan: "",
+      plan: raw
+    }
+  }
+  return {
+    tipoplan: normalizeTipoPlanValue_(parts[0]),
+    plan: String(parts[1] || "").trim()
+  }
+}
+
 function syncBulkControls(){
   const operation = normalizeText(document.getElementById("bulkOperation").value || "mark_paid")
   const bulkValue = document.getElementById("bulkValue")
@@ -1893,8 +1949,7 @@ function syncBulkControls(){
   if(operation === "setplan"){
     bulkWrap.classList.remove("hidden")
     if(bulkLabel) bulkLabel.textContent = "Plan"
-    bulkValue.innerHTML = '<option value="basic">basic</option><option value="corporativa">corporativa</option><option value="ecommerce">ecommerce</option>'
-    bulkValue.value = "basic"
+    setSelectOptions("bulkValue", buildBulkPlanOptions_(), "LuckyWeb|basic")
     return
   }
   bulkWrap.classList.add("hidden")
@@ -1926,16 +1981,24 @@ async function handleBulkApply(){
 
   const operation = String(document.getElementById("bulkOperation").value || "")
   const valueEl = document.getElementById("bulkValue")
-  const value = valueEl ? String(valueEl.value || "") : ""
+  const selectedValue = valueEl ? String(valueEl.value || "") : ""
+  const isSetPlanOperation = normalizeText(operation) === "setplan"
+  const parsedPlanSelection = isSetPlanOperation
+    ? parseBulkPlanValue_(selectedValue)
+    : { plan: selectedValue, tipoplan: "" }
+  const payload = {
+    action: "admin_bulk_clients",
+    adminToken: session.adminToken,
+    operation,
+    value: parsedPlanSelection.plan,
+    rowIndexes
+  }
+  if(isSetPlanOperation && parsedPlanSelection.tipoplan){
+    payload.tipoplan = parsedPlanSelection.tipoplan
+  }
   setFeedback("bulkFeedback", "Aplicando operación masiva...")
   try{
-    const result = await apiPostRequest({
-      action: "admin_bulk_clients",
-      adminToken: session.adminToken,
-      operation,
-      value,
-      rowIndexes
-    }, API_TIMEOUT_MS)
+    const result = await apiPostRequest(payload, API_TIMEOUT_MS)
 
     if(!result || result.success !== true){
       setFeedback("bulkFeedback", (result && result.message) ? result.message : "No se pudo aplicar la operación masiva.", "error")
@@ -1986,13 +2049,33 @@ function setSelectOptions(selectId, options, preferredValue){
   }
 }
 
-function applyPlanFieldRules(planSelectId, cuotaSelectId, consultasSelectId, preferredCuota, preferredConsultas){
+function applyPlanFieldRules(tipoPlanSelectId, planSelectId, cuotaSelectId, consultasSelectId, preferredPlan, preferredCuota, preferredConsultas){
+  const tipoPlanEl = document.getElementById(tipoPlanSelectId)
+  const tipoPlan = normalizeTipoPlanValue_(tipoPlanEl ? tipoPlanEl.value : "LuckyWeb")
+  if(tipoPlanEl){
+    tipoPlanEl.value = tipoPlan
+  }
+  setSelectOptions(planSelectId, buildPlanOptionsForType_(tipoPlan), preferredPlan)
+
   const planEl = document.getElementById(planSelectId)
   const cuotaEl = document.getElementById(cuotaSelectId)
   const consultasEl = document.getElementById(consultasSelectId)
   const plan = normalizeText(planEl ? planEl.value : "basic")
   const cuotaPreference = String(preferredCuota || "").trim()
   const consultasPreference = String(preferredConsultas || "").trim()
+
+  if(tipoPlan === "LuckyAuto"){
+    if(plan === "pro"){
+      setSelectOptions(cuotaSelectId, [{ value: "30,00€", label: "30,00€ (30€/mes)" }], "30,00€")
+    }else if(plan === "lucky"){
+      setSelectOptions(cuotaSelectId, [{ value: "60,00€", label: "60,00€ (60€/mes)" }], "60,00€")
+    }else{
+      setSelectOptions(cuotaSelectId, [{ value: "15,00€", label: "15,00€ (15€/mes)" }], "15,00€")
+    }
+    setSelectOptions(consultasSelectId, [{ value: "Ilimitadas", label: "Ilimitadas" }], "Ilimitadas")
+    if(consultasEl) consultasEl.disabled = true
+    return
+  }
 
   if(plan === "basic"){
     setSelectOptions(cuotaSelectId, [
@@ -2026,17 +2109,17 @@ function applyPlanFieldRules(planSelectId, cuotaSelectId, consultasSelectId, pre
     return
   }
 
-  setSelectOptions(cuotaSelectId, [{ value: "30,00€", label: "30,00€" }], "30,00€")
+  setSelectOptions(cuotaSelectId, [{ value: "20,00€", label: "20,00€" }], "20,00€")
   setSelectOptions(consultasSelectId, [{ value: "Ilimitadas", label: "Ilimitadas" }], "Ilimitadas")
   if(consultasEl) consultasEl.disabled = true
 }
 
-function syncCreateClientPlanFields(preferredCuota, preferredConsultas){
-  applyPlanFieldRules("newClientPlan", "newClientCuota", "newClientConsultas", preferredCuota, preferredConsultas)
+function syncCreateClientPlanFields(preferredPlan, preferredCuota, preferredConsultas){
+  applyPlanFieldRules("newClientTipoPlan", "newClientPlan", "newClientCuota", "newClientConsultas", preferredPlan, preferredCuota, preferredConsultas)
 }
 
-function syncEditClientPlanFields(preferredCuota, preferredConsultas){
-  applyPlanFieldRules("editClientPlan", "editClientCuota", "editClientConsultas", preferredCuota, preferredConsultas)
+function syncEditClientPlanFields(preferredPlan, preferredCuota, preferredConsultas){
+  applyPlanFieldRules("editClientTipoPlan", "editClientPlan", "editClientCuota", "editClientConsultas", preferredPlan, preferredCuota, preferredConsultas)
 }
 
 function readNewClientFormData(){
@@ -2046,7 +2129,7 @@ function readNewClientFormData(){
     email: String(document.getElementById("newClientEmail").value || "").trim(),
     password: String(document.getElementById("newClientPassword").value || "").trim(),
     plan: String(document.getElementById("newClientPlan").value || "").trim(),
-    tipoplan: String(document.getElementById("newClientTipoPlan").value || "").trim(),
+    tipoplan: normalizeTipoPlanValue_(document.getElementById("newClientTipoPlan").value || "LuckyWeb"),
     dominio: String(document.getElementById("newClientDominio").value || "").trim(),
     domprov: String(document.getElementById("newClientDomprov").value || "").trim(),
     cuota: String(document.getElementById("newClientCuota").value || "").trim(),
@@ -2232,8 +2315,8 @@ function fillClientEditForm(client){
   document.getElementById("editClientEmail").value = String(data.email || "")
   document.getElementById("editClientNombre").value = String(data.nombre || "")
   document.getElementById("editClientPassword").value = String(data.password || "")
-  document.getElementById("editClientPlan").value = String(data.plan || "basic")
-  document.getElementById("editClientTipoPlan").value = "LuckyWeb"
+  document.getElementById("editClientTipoPlan").value = normalizeTipoPlanValue_(data.tipoplan || "LuckyWeb")
+  syncEditClientPlanFields(data.plan || "basic", data.cuota, data.consultasocambiosrestantes)
   document.getElementById("editClientDominio").value = String(data.dominio || "")
   document.getElementById("editClientDomprov").value = String(data.domprov || "")
   document.getElementById("editClientPagado").value = normalizeText(data.pagado) === "abonado" ? "Abonado" : "No abonado"
@@ -2247,7 +2330,6 @@ function fillClientEditForm(client){
   document.getElementById("editClientFealta").value = toInputDateValue(data.fealta)
   document.getElementById("editClientNpedido").value = String(data.npedido || "")
   document.getElementById("editClientProxpago").value = String(data.proxpago || "")
-  syncEditClientPlanFields(data.cuota, data.consultasocambiosrestantes)
   document.getElementById("clientDetailSubtitle").textContent =
     "Fila " + String(data.rowIndex || "-") + " · " + String(data.usuario || "-")
 }
@@ -2260,7 +2342,7 @@ function readEditClientFormData(){
     email: String(document.getElementById("editClientEmail").value || "").trim(),
     password: String(document.getElementById("editClientPassword").value || "").trim(),
     plan: String(document.getElementById("editClientPlan").value || "").trim(),
-    tipoplan: "LuckyWeb",
+    tipoplan: normalizeTipoPlanValue_(document.getElementById("editClientTipoPlan").value || "LuckyWeb"),
     dominio: String(document.getElementById("editClientDominio").value || "").trim(),
     domprov: String(document.getElementById("editClientDomprov").value || "").trim(),
     cuota: String(document.getElementById("editClientCuota").value || "").trim(),
@@ -3248,6 +3330,7 @@ function bindEvents(){
 
   document.getElementById("clientsRefreshBtn").addEventListener("click", loadClients)
   document.getElementById("clientCreateForm").addEventListener("submit", handleCreateClient)
+  document.getElementById("newClientTipoPlan").addEventListener("change", () => syncCreateClientPlanFields())
   document.getElementById("newClientPlan").addEventListener("change", () => syncCreateClientPlanFields())
   document.getElementById("newClientCuota").addEventListener("change", () => syncCreateClientPlanFields())
   document.getElementById("bulkOperation").addEventListener("change", syncBulkControls)
@@ -3325,6 +3408,7 @@ function bindEvents(){
   document.getElementById("clientEditForm").addEventListener("submit", handleUpdateClient)
   document.getElementById("editClientEnablePanelBtn").addEventListener("click", handleEnablePanelInModal)
   document.getElementById("editClientResetPasswordBtn").addEventListener("click", handleGenerateAndSaveClientPassword)
+  document.getElementById("editClientTipoPlan").addEventListener("change", () => syncEditClientPlanFields())
   document.getElementById("editClientPlan").addEventListener("change", () => syncEditClientPlanFields())
   document.getElementById("editClientCuota").addEventListener("change", () => syncEditClientPlanFields())
 
@@ -3348,7 +3432,7 @@ function bindEvents(){
   document.getElementById("auditEntityFilter").addEventListener("change", loadAuditLog)
 
   document.getElementById("cfRefreshBtn").addEventListener("click", loadCloudflareStatus)
-  syncCreateClientPlanFields()
+  syncCreateClientPlanFields("basic")
   syncBulkControls()
 }
 
