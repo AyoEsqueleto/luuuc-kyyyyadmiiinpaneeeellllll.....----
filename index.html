@@ -1158,6 +1158,12 @@ button:disabled{
                 <label>Cuota
                   <select id="newClientCuota"></select>
                 </label>
+                <label>Periodicidad cobro
+                  <select id="newClientPeriodicidad">
+                    <option value="mensual">Mensual</option>
+                    <option value="anual">Anual (12 meses)</option>
+                  </select>
+                </label>
                 <label>Consultas restantes
                   <select id="newClientConsultas"></select>
                 </label>
@@ -1416,6 +1422,12 @@ button:disabled{
         <label>Cuota
           <select id="editClientCuota"></select>
         </label>
+        <label>Periodicidad cobro
+          <select id="editClientPeriodicidad">
+            <option value="mensual">Mensual</option>
+            <option value="anual">Anual (12 meses)</option>
+          </select>
+        </label>
         <label>Consultas restantes
           <select id="editClientConsultas"></select>
         </label>
@@ -1546,6 +1558,101 @@ function normalizeTipoPlanValue_(value){
     return "LuckyAuto"
   }
   return "LuckyWeb"
+}
+
+function normalizeBillingPeriodicityValue_(value){
+  const key = normalizeText(value)
+  if(key === "anual" || key === "annual" || key === "yearly" || key === "year" || key === "12m"){
+    return "anual"
+  }
+  return "mensual"
+}
+
+function parseEuroAmount_(value){
+  const raw = String(value || "").trim()
+  if(!raw) return NaN
+  const compact = raw
+    .replace(/\s/g, "")
+    .replace(/€/g, "")
+  const normalized = compact.indexOf(",") !== -1
+    ? compact.replace(/\./g, "").replace(/,/g, ".")
+    : compact
+  const parsed = Number(normalized)
+  return Number.isFinite(parsed) ? parsed : NaN
+}
+
+function formatEuroAmount_(value){
+  const num = Number(value)
+  if(!Number.isFinite(num)) return ""
+  return num.toFixed(2).replace(".", ",") + "€"
+}
+
+function getMonthlyCuotaCandidatesForUi_(tipoPlan, plan){
+  const tipo = normalizeTipoPlanValue_(tipoPlan)
+  const planKey = normalizeText(plan)
+  if(tipo === "LuckyAuto"){
+    if(planKey === "pro") return ["30,00€"]
+    if(planKey === "lucky") return ["60,00€"]
+    return ["15,00€"]
+  }
+  if(planKey === "basic") return ["3,50€", "6,50€"]
+  if(planKey === "corporativa") return ["5,50€"]
+  return ["20,00€"]
+}
+
+function resolveBillingFormValues_(tipoPlan, plan, cuotaStored, periodicidadHint){
+  const candidates = getMonthlyCuotaCandidatesForUi_(tipoPlan, plan)
+  const hint = normalizeBillingPeriodicityValue_(periodicidadHint || "")
+  const amount = parseEuroAmount_(cuotaStored)
+  let selectedMonthly = String(candidates[0] || "3,50€")
+  let detectedPeriodicidad = ""
+
+  if(Number.isFinite(amount) && amount > 0){
+    for(let i = 0; i < candidates.length; i += 1){
+      const monthly = String(candidates[i] || "").trim()
+      const monthlyAmount = parseEuroAmount_(monthly)
+      if(!Number.isFinite(monthlyAmount) || monthlyAmount <= 0){
+        continue
+      }
+      if(Math.abs(amount - monthlyAmount) < 0.0001){
+        selectedMonthly = formatEuroAmount_(monthlyAmount)
+        detectedPeriodicidad = "mensual"
+        break
+      }
+      if(Math.abs(amount - (monthlyAmount * 12)) < 0.0001){
+        selectedMonthly = formatEuroAmount_(monthlyAmount)
+        detectedPeriodicidad = "anual"
+        break
+      }
+    }
+  }
+
+  if(!detectedPeriodicidad){
+    detectedPeriodicidad = hint || "mensual"
+  }else if(hint){
+    detectedPeriodicidad = hint
+  }
+
+  return {
+    periodicidad: detectedPeriodicidad,
+    cuotaMensual: selectedMonthly
+  }
+}
+
+function buildCuotaOptionForPeriodicity_(monthlyValue, periodicidad){
+  const monthlyAmount = parseEuroAmount_(monthlyValue)
+  const monthlyText = Number.isFinite(monthlyAmount) ? formatEuroAmount_(monthlyAmount) : String(monthlyValue || "").trim()
+  if(normalizeBillingPeriodicityValue_(periodicidad) === "anual" && Number.isFinite(monthlyAmount)){
+    const annualText = formatEuroAmount_(monthlyAmount * 12)
+    return {
+      value: monthlyText,
+      label: annualText + " (12 x " + monthlyText + ")"
+    }
+  }
+  return {
+    value: monthlyText,
+    label: monthlyText + " / mes"
+  }
 }
 
 function getTicketTemplateScope_(ticket){
@@ -2121,12 +2228,19 @@ function syncFlowInputsByTipoPlan_(tipoPlanSelectId, activeInputId, inactiveInpu
   }
 }
 
-function applyPlanFieldRules(tipoPlanSelectId, planSelectId, cuotaSelectId, consultasSelectId, preferredPlan, preferredCuota, preferredConsultas){
+function applyPlanFieldRules(tipoPlanSelectId, planSelectId, cuotaSelectId, consultasSelectId, periodicidadSelectId, preferredPlan, preferredCuota, preferredConsultas, preferredPeriodicidad){
   const tipoPlanEl = document.getElementById(tipoPlanSelectId)
   const tipoPlan = normalizeTipoPlanValue_(tipoPlanEl ? tipoPlanEl.value : "LuckyWeb")
   if(tipoPlanEl){
     tipoPlanEl.value = tipoPlan
   }
+  const periodicidadEl = document.getElementById(periodicidadSelectId)
+  if(periodicidadEl){
+    periodicidadEl.value = normalizeBillingPeriodicityValue_(
+      preferredPeriodicidad !== undefined ? preferredPeriodicidad : periodicidadEl.value
+    )
+  }
+  const periodicidad = normalizeBillingPeriodicityValue_(periodicidadEl ? periodicidadEl.value : preferredPeriodicidad)
   setSelectOptions(planSelectId, buildPlanOptionsForType_(tipoPlan), preferredPlan)
 
   const planEl = document.getElementById(planSelectId)
@@ -2138,11 +2252,11 @@ function applyPlanFieldRules(tipoPlanSelectId, planSelectId, cuotaSelectId, cons
 
   if(tipoPlan === "LuckyAuto"){
     if(plan === "pro"){
-      setSelectOptions(cuotaSelectId, [{ value: "30,00€", label: "30,00€ (30€/mes)" }], "30,00€")
+      setSelectOptions(cuotaSelectId, [buildCuotaOptionForPeriodicity_("30,00€", periodicidad)], "30,00€")
     }else if(plan === "lucky"){
-      setSelectOptions(cuotaSelectId, [{ value: "60,00€", label: "60,00€ (60€/mes)" }], "60,00€")
+      setSelectOptions(cuotaSelectId, [buildCuotaOptionForPeriodicity_("60,00€", periodicidad)], "60,00€")
     }else{
-      setSelectOptions(cuotaSelectId, [{ value: "15,00€", label: "15,00€ (15€/mes)" }], "15,00€")
+      setSelectOptions(cuotaSelectId, [buildCuotaOptionForPeriodicity_("15,00€", periodicidad)], "15,00€")
     }
     setSelectOptions(consultasSelectId, [{ value: "Ilimitadas", label: "Ilimitadas" }], "Ilimitadas")
     if(consultasEl) consultasEl.disabled = true
@@ -2151,8 +2265,8 @@ function applyPlanFieldRules(tipoPlanSelectId, planSelectId, cuotaSelectId, cons
 
   if(plan === "basic"){
     setSelectOptions(cuotaSelectId, [
-      { value: "3,50€", label: "3,50€" },
-      { value: "6,50€", label: "6,50€" }
+      buildCuotaOptionForPeriodicity_("3,50€", periodicidad),
+      buildCuotaOptionForPeriodicity_("6,50€", periodicidad)
     ], cuotaPreference || "3,50€")
 
     const cuotaValue = normalizeText(cuotaEl ? cuotaEl.value : "")
@@ -2175,24 +2289,44 @@ function applyPlanFieldRules(tipoPlanSelectId, planSelectId, cuotaSelectId, cons
   }
 
   if(plan === "corporativa"){
-    setSelectOptions(cuotaSelectId, [{ value: "5,50€", label: "5,50€" }], "5,50€")
+    setSelectOptions(cuotaSelectId, [buildCuotaOptionForPeriodicity_("5,50€", periodicidad)], "5,50€")
     setSelectOptions(consultasSelectId, [{ value: "Ilimitadas", label: "Ilimitadas" }], "Ilimitadas")
     if(consultasEl) consultasEl.disabled = true
     return
   }
 
-  setSelectOptions(cuotaSelectId, [{ value: "20,00€", label: "20,00€" }], "20,00€")
+  setSelectOptions(cuotaSelectId, [buildCuotaOptionForPeriodicity_("20,00€", periodicidad)], "20,00€")
   setSelectOptions(consultasSelectId, [{ value: "Ilimitadas", label: "Ilimitadas" }], "Ilimitadas")
   if(consultasEl) consultasEl.disabled = true
 }
 
-function syncCreateClientPlanFields(preferredPlan, preferredCuota, preferredConsultas){
-  applyPlanFieldRules("newClientTipoPlan", "newClientPlan", "newClientCuota", "newClientConsultas", preferredPlan, preferredCuota, preferredConsultas)
+function syncCreateClientPlanFields(preferredPlan, preferredCuota, preferredConsultas, preferredPeriodicidad){
+  applyPlanFieldRules(
+    "newClientTipoPlan",
+    "newClientPlan",
+    "newClientCuota",
+    "newClientConsultas",
+    "newClientPeriodicidad",
+    preferredPlan,
+    preferredCuota,
+    preferredConsultas,
+    preferredPeriodicidad
+  )
   syncFlowInputsByTipoPlan_("newClientTipoPlan", "newClientFlujosActivos", "newClientFlujosInactivos")
 }
 
-function syncEditClientPlanFields(preferredPlan, preferredCuota, preferredConsultas, preferredFlujosActivos, preferredFlujosInactivos){
-  applyPlanFieldRules("editClientTipoPlan", "editClientPlan", "editClientCuota", "editClientConsultas", preferredPlan, preferredCuota, preferredConsultas)
+function syncEditClientPlanFields(preferredPlan, preferredCuota, preferredConsultas, preferredFlujosActivos, preferredFlujosInactivos, preferredPeriodicidad){
+  applyPlanFieldRules(
+    "editClientTipoPlan",
+    "editClientPlan",
+    "editClientCuota",
+    "editClientConsultas",
+    "editClientPeriodicidad",
+    preferredPlan,
+    preferredCuota,
+    preferredConsultas,
+    preferredPeriodicidad
+  )
   syncFlowInputsByTipoPlan_("editClientTipoPlan", "editClientFlujosActivos", "editClientFlujosInactivos", preferredFlujosActivos, preferredFlujosInactivos)
 }
 
@@ -2211,6 +2345,7 @@ function readNewClientFormData(){
     dominio: String(document.getElementById("newClientDominio").value || "").trim(),
     domprov: String(document.getElementById("newClientDomprov").value || "").trim(),
     cuota: String(document.getElementById("newClientCuota").value || "").trim(),
+    periodicidad: normalizeBillingPeriodicityValue_(document.getElementById("newClientPeriodicidad").value || "mensual"),
     consultasocambiosrestantes: String(document.getElementById("newClientConsultas").value || "").trim(),
     flujosactivos: isAuto ? (flujosActivos || "0") : "",
     flujosinactivos: isAuto ? (flujosInactivos || "0") : "",
@@ -2357,9 +2492,11 @@ function renderClient360(result){
       const flowSummary = isAuto
         ? (' · Flujos: ' + String(plan.flujosactivos || "0") + ' activos / ' + String(plan.flujosinactivos || "0") + ' inactivos')
         : ""
+      const periodicidad = normalizeBillingPeriodicityValue_(plan.periodicidad || "")
+      const periodicidadLabel = periodicidad === "anual" ? "Anual" : "Mensual"
       return '<div class="msg client">' +
         '<div class="msg-head"><strong>' + escapeHtml(plan.plan || "-") + '</strong><span>' + escapeHtml(plan.npedido || "-") + '</span></div>' +
-        '<div class="msg-body">Tipo: ' + escapeHtml(planType || "-") + ' · Dominio: ' + escapeHtml(plan.dominio || "-") + ' · Próximo pago: ' + escapeHtml(plan.proxpago || "-") + flowSummary + '</div>' +
+        '<div class="msg-body">Tipo: ' + escapeHtml(planType || "-") + ' · Cobro: ' + escapeHtml(periodicidadLabel) + ' · Dominio: ' + escapeHtml(plan.dominio || "-") + ' · Próximo pago: ' + escapeHtml(plan.proxpago || "-") + flowSummary + '</div>' +
       '</div>'
     }).join("")
     : '<p class="feedback">Sin planes.</p>'
@@ -2400,13 +2537,21 @@ function fillClientEditForm(client){
   document.getElementById("editClientEmail").value = String(data.email || "")
   document.getElementById("editClientNombre").value = String(data.nombre || "")
   document.getElementById("editClientPassword").value = String(data.password || "")
-  document.getElementById("editClientTipoPlan").value = normalizeTipoPlanValue_(data.tipoplan || "LuckyWeb")
-  syncEditClientPlanFields(
+  const normalizedTipoPlan = normalizeTipoPlanValue_(data.tipoplan || "LuckyWeb")
+  const billingFormValues = resolveBillingFormValues_(
+    normalizedTipoPlan,
     data.plan || "basic",
     data.cuota,
+    data.periodicidad
+  )
+  document.getElementById("editClientTipoPlan").value = normalizedTipoPlan
+  syncEditClientPlanFields(
+    data.plan || "basic",
+    billingFormValues.cuotaMensual,
     data.consultasocambiosrestantes,
     data.flujosactivos,
-    data.flujosinactivos
+    data.flujosinactivos,
+    billingFormValues.periodicidad
   )
   document.getElementById("editClientDominio").value = String(data.dominio || "")
   document.getElementById("editClientDomprov").value = String(data.domprov || "")
@@ -2441,6 +2586,7 @@ function readEditClientFormData(){
     dominio: String(document.getElementById("editClientDominio").value || "").trim(),
     domprov: String(document.getElementById("editClientDomprov").value || "").trim(),
     cuota: String(document.getElementById("editClientCuota").value || "").trim(),
+    periodicidad: normalizeBillingPeriodicityValue_(document.getElementById("editClientPeriodicidad").value || "mensual"),
     consultasocambiosrestantes: String(document.getElementById("editClientConsultas").value || "").trim(),
     flujosactivos: isAuto ? (flujosActivos || "0") : "",
     flujosinactivos: isAuto ? (flujosInactivos || "0") : "",
@@ -2654,6 +2800,7 @@ async function handleUpdateClient(event){
       dominio: payload.dominio,
       domprov: payload.domprov,
       cuota: payload.cuota,
+      periodicidad: payload.periodicidad,
       consultasocambiosrestantes: payload.consultasocambiosrestantes,
       flujosactivos: payload.flujosactivos,
       flujosinactivos: payload.flujosinactivos,
@@ -2728,6 +2875,7 @@ async function handleCreateClient(event){
       dominio: payload.dominio,
       domprov: payload.domprov,
       cuota: payload.cuota,
+      periodicidad: payload.periodicidad,
       consultasocambiosrestantes: payload.consultasocambiosrestantes,
       flujosactivos: payload.flujosactivos,
       flujosinactivos: payload.flujosinactivos,
@@ -3450,6 +3598,7 @@ function bindEvents(){
   document.getElementById("newClientTipoPlan").addEventListener("change", () => syncCreateClientPlanFields())
   document.getElementById("newClientPlan").addEventListener("change", () => syncCreateClientPlanFields())
   document.getElementById("newClientCuota").addEventListener("change", () => syncCreateClientPlanFields())
+  document.getElementById("newClientPeriodicidad").addEventListener("change", () => syncCreateClientPlanFields())
   document.getElementById("bulkOperation").addEventListener("change", syncBulkControls)
   document.getElementById("bulkApplyBtn").addEventListener("click", handleBulkApply)
   document.getElementById("bulkClearSelectionBtn").addEventListener("click", clearClientSelection_)
@@ -3528,6 +3677,7 @@ function bindEvents(){
   document.getElementById("editClientTipoPlan").addEventListener("change", () => syncEditClientPlanFields())
   document.getElementById("editClientPlan").addEventListener("change", () => syncEditClientPlanFields())
   document.getElementById("editClientCuota").addEventListener("change", () => syncEditClientPlanFields())
+  document.getElementById("editClientPeriodicidad").addEventListener("change", () => syncEditClientPlanFields())
 
   document.getElementById("ticketRefreshBtn").addEventListener("click", loadTickets)
   document.getElementById("ticketStatusFilter").addEventListener("change", loadTickets)
