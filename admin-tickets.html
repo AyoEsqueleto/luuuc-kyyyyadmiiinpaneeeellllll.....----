@@ -1037,6 +1037,242 @@ button:disabled{
   .ticket-top{
     flex-direction:column;
   }
+
+  .doc-editor-shell{
+    grid-template-columns:1fr;
+  }
+
+  .doc-canvas-outer{
+    overflow-x:auto;
+  }
+}
+
+/* ===== Documentación / editor visual de plantillas ===== */
+.doc-template-grid{
+  display:grid;
+  gap:10px;
+  grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  margin-top:10px;
+}
+
+.doc-template-card{
+  border:1px solid rgba(46,75,111,.92);
+  border-radius:14px;
+  padding:12px;
+  background:linear-gradient(170deg,#0d1c34,#0a172d);
+  cursor:pointer;
+  transition:border-color .18s ease, transform .15s ease;
+}
+
+.doc-template-card:hover{
+  border-color:#4f90ff;
+  transform:translateY(-1px);
+}
+
+.doc-template-card.active{
+  border-color:#1f8fff;
+  box-shadow:0 0 0 1px rgba(31,143,255,.4);
+}
+
+.doc-template-card strong{
+  display:block;
+  font-size:13px;
+  margin-bottom:4px;
+}
+
+.doc-template-card span{
+  color:var(--muted);
+  font-size:11.5px;
+  line-height:1.4;
+}
+
+.doc-upload-row{
+  display:grid;
+  gap:8px;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  margin-top:10px;
+}
+
+.doc-upload-row label{
+  border:1px dashed #345279;
+  border-radius:12px;
+  padding:10px;
+  background:#0b1830;
+  cursor:pointer;
+  text-align:center;
+  color:var(--muted);
+  display:grid;
+  gap:6px;
+}
+
+.doc-upload-row input[type="file"]{
+  display:none;
+}
+
+.doc-editor-shell{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 260px;
+  gap:14px;
+  margin-top:14px;
+  align-items:start;
+}
+
+.doc-canvas-outer{
+  border:1px solid rgba(46,72,105,.9);
+  border-radius:14px;
+  background:#070d1a;
+  padding:18px;
+  overflow:auto;
+  display:flex;
+  justify-content:center;
+}
+
+.doc-canvas{
+  position:relative;
+  width:794px;
+  min-height:1123px;
+  background:linear-gradient(165deg,#ffffff,#f4f6fb);
+  color:#16213a;
+  box-shadow:0 18px 50px rgba(0,0,0,.5);
+  border-radius:4px;
+  overflow:hidden;
+  flex:0 0 auto;
+}
+
+.doc-canvas.doc-has-image-bg{
+  background-size:cover;
+  background-position:top center;
+  background-repeat:no-repeat;
+}
+
+.doc-canvas .doc-docx-bg{
+  position:absolute;
+  inset:0;
+  overflow:auto;
+  padding:40px;
+  font-size:13px;
+  line-height:1.5;
+  color:#1c2640;
+  background:#ffffff;
+  pointer-events:none;
+}
+
+.doc-field{
+  position:absolute;
+  border:1px dashed rgba(31,99,201,.75);
+  background:rgba(170,205,255,.16);
+  min-width:36px;
+  min-height:24px;
+}
+
+.doc-canvas.doc-exporting .doc-field{
+  border-color:transparent;
+  background:transparent;
+}
+
+.doc-canvas.doc-exporting .doc-field-bar,
+.doc-canvas.doc-exporting .doc-field-resize{
+  display:none !important;
+}
+
+.doc-field-bar{
+  height:14px;
+  cursor:move;
+  background:#1f63c9;
+  opacity:.85;
+}
+
+.doc-field-bar:hover{
+  opacity:1;
+}
+
+.doc-field.selected .doc-field-bar{
+  background:#0f8f5f;
+}
+
+.doc-field-body{
+  outline:none;
+  padding:4px 6px;
+  width:100%;
+  height:calc(100% - 14px);
+  overflow:auto;
+  white-space:pre-wrap;
+  font-family:"Manrope","Avenir Next","Trebuchet MS",sans-serif;
+}
+
+.doc-field-resize{
+  position:absolute;
+  right:0;
+  bottom:0;
+  width:11px;
+  height:11px;
+  cursor:nwse-resize;
+  background:#1f63c9;
+  border-radius:2px 0 0 0;
+}
+
+.doc-side-panel{
+  display:grid;
+  gap:10px;
+  align-content:start;
+}
+
+.doc-side-card{
+  border:1px solid rgba(46,75,111,.92);
+  border-radius:14px;
+  padding:12px;
+  background:linear-gradient(170deg,#0d1c34,#0a172d);
+}
+
+.doc-side-card h4{
+  margin:0 0 8px;
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.3px;
+  color:#9db4d7;
+}
+
+.doc-field-controls{
+  display:grid;
+  gap:7px;
+}
+
+.doc-field-controls .row{
+  gap:6px;
+}
+
+.doc-saved-list{
+  display:grid;
+  gap:8px;
+  margin-top:10px;
+}
+
+.doc-saved-item{
+  border:1px solid rgba(46,75,111,.92);
+  border-radius:12px;
+  padding:10px;
+  background:#0a172d;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+.doc-saved-item strong{
+  font-size:13px;
+  display:block;
+}
+
+.doc-saved-item span{
+  color:var(--muted);
+  font-size:11.5px;
+}
+
+.doc-mini-btn{
+  border-radius:8px;
+  padding:6px 9px;
+  font-size:11.5px;
 }
 </style>
 </head>
@@ -1076,6 +1312,7 @@ button:disabled{
           <button class="tab-btn" type="button" data-tab="search"><span class="tab-icon">◐</span>Buscador</button>
           <button class="tab-btn" type="button" data-tab="audit"><span class="tab-icon">◑</span>Auditoría</button>
           <button class="tab-btn" type="button" data-tab="cloudflare"><span class="tab-icon">◌</span>Cloudflare</button>
+          <button class="tab-btn" type="button" data-tab="docs"><span class="tab-icon">◒</span>Documentación</button>
         </nav>
         <div class="sidebar-foot">
           <span class="quick-pill">Panel administrativo unificado</span>
@@ -1369,6 +1606,107 @@ button:disabled{
             </div>
             <div id="auditFeedback" class="feedback"></div>
             <div id="auditList" class="ticket-list"></div>
+          </section>
+
+          <section id="tab-docs" class="tab-pane hidden">
+            <div class="panel-tools">
+              <h3 class="section-title">Documentación · Editor visual</h3>
+              <div class="row">
+                <label>Cliente origen (autocompletar)
+                  <select id="docClientSource"><option value="">— Ninguno —</option></select>
+                </label>
+                <button id="docAutofillBtn" class="btn-muted" type="button">Autocompletar con cliente</button>
+              </div>
+            </div>
+            <div id="docGlobalFeedback" class="feedback"></div>
+
+            <div class="client-manage-card">
+              <div class="client-manage-head">
+                <strong>1. Elige una plantilla de LuckyBase</strong>
+                <span class="quick-pill">Factura, presupuesto, contrato, bienvenida y aviso de plan</span>
+              </div>
+              <div id="docTemplateGrid" class="doc-template-grid"></div>
+            </div>
+
+            <div class="client-manage-card">
+              <div class="client-manage-head">
+                <strong>2. (Opcional) Sube tu propio fondo de plantilla</strong>
+                <span class="quick-pill">PDF, imagen o DOCX — se usa como fondo del editor</span>
+              </div>
+              <div class="doc-upload-row">
+                <label for="docBgPdfInput">📄 Subir PDF (1ª página como fondo)
+                  <input id="docBgPdfInput" type="file" accept="application/pdf">
+                </label>
+                <label for="docBgImageInput">🖼️ Subir imagen (PNG/JPG) como fondo
+                  <input id="docBgImageInput" type="file" accept="image/png,image/jpeg,image/webp">
+                </label>
+                <label for="docBgDocxInput">📝 Subir DOCX (se usa como capa de fondo)
+                  <input id="docBgDocxInput" type="file" accept=".docx">
+                </label>
+                <label for="docBgClearBtnWrap" style="cursor:default;">🧹 Quitar fondo actual
+                  <button id="docBgClearBtn" class="btn-muted" type="button" style="margin-top:2px;">Quitar fondo</button>
+                </label>
+              </div>
+              <div id="docUploadFeedback" class="feedback"></div>
+            </div>
+
+            <div class="client-manage-card">
+              <div class="client-manage-head">
+                <strong>3. Edita, guarda y descarga</strong>
+                <span class="quick-pill">Arrastra la barra azul para mover, la esquina para redimensionar</span>
+              </div>
+              <div class="row">
+                <label>Nombre del documento
+                  <input id="docNameInput" type="text" maxlength="160" placeholder="ej. Factura LB-0001234">
+                </label>
+              </div>
+              <div class="row" style="margin-top:8px;">
+                <button id="docAddFieldBtn" class="btn-muted" type="button">+ Añadir campo de texto</button>
+                <button id="docSaveBtn" class="btn-primary" type="button">Guardar documento</button>
+                <button id="docSaveAsBtn" class="btn-muted" type="button">Guardar como nuevo</button>
+                <button id="docDownloadPdfBtn" class="btn-muted" type="button">Descargar PDF</button>
+                <button id="docDownloadPngBtn" class="btn-muted" type="button">Descargar imagen</button>
+              </div>
+              <div id="docEditorFeedback" class="feedback"></div>
+
+              <div class="doc-editor-shell">
+                <div class="doc-canvas-outer">
+                  <div id="docCanvas" class="doc-canvas"></div>
+                </div>
+                <aside class="doc-side-panel">
+                  <div class="doc-side-card">
+                    <h4>Campo seleccionado</h4>
+                    <div class="doc-field-controls">
+                      <label>Texto<textarea id="docFieldTextInput" maxlength="2000" placeholder="Selecciona un campo del documento"></textarea></label>
+                      <div class="row">
+                        <label style="flex:1;">Tamaño<input id="docFieldFontSize" type="number" min="8" max="72" step="1"></label>
+                        <label style="flex:1;">Color<input id="docFieldColor" type="color" value="#16213a"></label>
+                      </div>
+                      <div class="row">
+                        <label style="flex:1;">Alineación
+                          <select id="docFieldAlign">
+                            <option value="left">Izquierda</option>
+                            <option value="center">Centro</option>
+                            <option value="right">Derecha</option>
+                          </select>
+                        </label>
+                        <label style="flex:1;">Negrita
+                          <select id="docFieldBold">
+                            <option value="0">No</option>
+                            <option value="1">Sí</option>
+                          </select>
+                        </label>
+                      </div>
+                      <button id="docFieldDeleteBtn" class="btn-row-danger" type="button">Eliminar este campo</button>
+                    </div>
+                  </div>
+                  <div class="doc-side-card">
+                    <h4>Mis documentos guardados</h4>
+                    <div id="docSavedList" class="doc-saved-list"></div>
+                  </div>
+                </aside>
+              </div>
+            </div>
           </section>
         </div>
       </section>
@@ -1825,6 +2163,7 @@ function setActiveTab(tab){
   if(tab === "search") setFeedback("globalSearchFeedback", "")
   if(tab === "audit") loadAuditLog()
   if(tab === "cloudflare") loadCloudflareStatus()
+  if(tab === "docs") initDocsTab_()
 }
 
 function normalizePriority(raw){
@@ -3580,7 +3919,804 @@ function handleLogout(){
   showAdminView(false)
 }
 
+/* ===================== Documentación: editor visual de plantillas ===================== */
+const DOC_STORAGE_KEY = "luckybase_admin_documents_v1"
+const DOC_PAGE_W = 794
+const DOC_PAGE_H = 1123
+let docsCache = []
+let currentDocState = null
+let docSelectedFieldId = null
+let docFieldIdSeq = 1
+let docDragCtx = null
+
+const DOC_TEMPLATES = [
+  {
+    id: "invoice",
+    name: "Factura / Recibo de pago",
+    description: "Datos de facturación, plan contratado e importe.",
+    backgroundCss: "linear-gradient(180deg,#ffffff 0,#ffffff 100%)",
+    fields: [
+      { key:"", label:"", x:40, y:40, w:320, h:42, fontSize:26, bold:true, align:"left", color:"#0d2c63", text:"LuckyBase" },
+      { key:"", label:"", x:40, y:86, w:360, h:22, fontSize:11, bold:false, align:"left", color:"#5a6b8c", text:"Servicios web y automatización · luckybase.es" },
+      { key:"", label:"", x:454, y:40, w:300, h:36, fontSize:22, bold:true, align:"right", color:"#0d2c63", text:"FACTURA" },
+      { key:"cliente_npedido", label:"Nº pedido: ", x:454, y:82, w:300, h:22, fontSize:12, align:"right", color:"#374765", text:"Nº pedido: -" },
+      { key:"doc_today", label:"Fecha emisión: ", x:454, y:106, w:300, h:22, fontSize:12, align:"right", color:"#374765", text:"Fecha emisión: -" },
+      { key:"", label:"", x:40, y:166, w:300, h:20, fontSize:11, bold:true, align:"left", color:"#0d2c63", text:"FACTURAR A" },
+      { key:"cliente_nombre", label:"", x:40, y:190, w:360, h:24, fontSize:14, bold:true, align:"left", color:"#16213a", text:"Nombre del cliente" },
+      { key:"cliente_email", label:"", x:40, y:216, w:360, h:22, fontSize:12, align:"left", color:"#374765", text:"correo@cliente.com" },
+      { key:"cliente_usuario", label:"Usuario: ", x:40, y:240, w:360, h:22, fontSize:12, align:"left", color:"#374765", text:"Usuario: -" },
+      { key:"cliente_dominio", label:"Dominio: ", x:40, y:264, w:360, h:22, fontSize:12, align:"left", color:"#374765", text:"Dominio: -" },
+      { key:"cliente_plan", label:"Plan: ", x:40, y:336, w:360, h:24, fontSize:13, align:"left", color:"#16213a", text:"Plan: -" },
+      { key:"cliente_tipoplan", label:"Tipo de plan: ", x:40, y:364, w:360, h:24, fontSize:13, align:"left", color:"#16213a", text:"Tipo de plan: -" },
+      { key:"cliente_periodicidad", label:"Periodicidad de cobro: ", x:40, y:392, w:360, h:24, fontSize:13, align:"left", color:"#16213a", text:"Periodicidad de cobro: -" },
+      { key:"cliente_cuota", label:"Importe: ", x:454, y:336, w:300, h:26, fontSize:17, bold:true, align:"right", color:"#0d2c63", text:"Importe: -" },
+      { key:"cliente_proxpago", label:"Próximo pago: ", x:454, y:370, w:300, h:22, fontSize:12, align:"right", color:"#374765", text:"Próximo pago: -" },
+      { key:"cliente_pagado", label:"Estado de pago: ", x:454, y:394, w:300, h:22, fontSize:12, align:"right", color:"#374765", text:"Estado de pago: -" },
+      { key:"", label:"", x:40, y:470, w:714, h:60, fontSize:11, align:"left", color:"#5a6b8c", text:"Gracias por confiar en LuckyBase. Para cualquier consulta sobre esta factura, responde al ticket de soporte desde tu panel de cliente o escribe a soporte@luckybase.es." },
+      { key:"", label:"", x:40, y:1064, w:714, h:28, fontSize:10, align:"center", color:"#9aa6c2", text:"LuckyBase · luckybase.es · Documento generado desde el panel de administración" }
+    ]
+  },
+  {
+    id: "quote",
+    name: "Presupuesto",
+    description: "Propuesta de plan, importe y condiciones para un cliente.",
+    backgroundCss: "linear-gradient(180deg,#ffffff 0,#ffffff 100%)",
+    fields: [
+      { key:"", label:"", x:40, y:40, w:320, h:42, fontSize:26, bold:true, align:"left", color:"#0d2c63", text:"LuckyBase" },
+      { key:"", label:"", x:454, y:40, w:300, h:36, fontSize:22, bold:true, align:"right", color:"#0d2c63", text:"PRESUPUESTO" },
+      { key:"doc_today", label:"Fecha: ", x:454, y:82, w:300, h:22, fontSize:12, align:"right", color:"#374765", text:"Fecha: -" },
+      { key:"", label:"", x:454, y:106, w:300, h:22, fontSize:12, align:"right", color:"#374765", text:"Validez de la oferta: 15 días" },
+      { key:"", label:"", x:40, y:166, w:300, h:20, fontSize:11, bold:true, align:"left", color:"#0d2c63", text:"DIRIGIDO A" },
+      { key:"cliente_nombre", label:"", x:40, y:190, w:360, h:24, fontSize:14, bold:true, align:"left", color:"#16213a", text:"Nombre del cliente" },
+      { key:"cliente_email", label:"", x:40, y:216, w:360, h:22, fontSize:12, align:"left", color:"#374765", text:"correo@cliente.com" },
+      { key:"cliente_dominio", label:"Dominio: ", x:40, y:240, w:360, h:22, fontSize:12, align:"left", color:"#374765", text:"Dominio: -" },
+      { key:"", label:"", x:40, y:300, w:300, h:20, fontSize:11, bold:true, align:"left", color:"#0d2c63", text:"PLAN PROPUESTO" },
+      { key:"cliente_plan", label:"Plan: ", x:40, y:324, w:360, h:24, fontSize:13, align:"left", color:"#16213a", text:"Plan: -" },
+      { key:"cliente_tipoplan", label:"Tipo de plan: ", x:40, y:352, w:360, h:24, fontSize:13, align:"left", color:"#16213a", text:"Tipo de plan: -" },
+      { key:"cliente_cuota", label:"Importe estimado: ", x:454, y:324, w:300, h:26, fontSize:17, bold:true, align:"right", color:"#0d2c63", text:"Importe estimado: -" },
+      { key:"cliente_periodicidad", label:"Periodicidad: ", x:454, y:358, w:300, h:22, fontSize:12, align:"right", color:"#374765", text:"Periodicidad: -" },
+      { key:"", label:"", x:40, y:420, w:714, h:22, fontSize:11, bold:true, align:"left", color:"#0d2c63", text:"CONDICIONES" },
+      { key:"", label:"", x:40, y:446, w:714, h:140, fontSize:12, align:"left", color:"#374765", text:"El presupuesto incluye configuración inicial, puesta en marcha y soporte por ticket durante el primer mes. El alta del dominio y la migración de contenidos, si procede, se gestionan junto con el equipo de LuckyBase. El importe indicado se factura según la periodicidad seleccionada a partir de la fecha de aceptación." },
+      { key:"", label:"", x:40, y:980, w:330, h:80, fontSize:12, align:"left", color:"#16213a", text:"Firma cliente (aceptación):\n\n______________________" },
+      { key:"", label:"", x:424, y:980, w:330, h:80, fontSize:12, align:"left", color:"#16213a", text:"Por LuckyBase:\n\n______________________" }
+    ]
+  },
+  {
+    id: "contract",
+    name: "Contrato de prestación de servicios",
+    description: "Acuerdo de servicio con plan, dominio, duración e importe.",
+    backgroundCss: "linear-gradient(180deg,#ffffff 0,#ffffff 100%)",
+    fields: [
+      { key:"", label:"", x:40, y:40, w:714, h:38, fontSize:20, bold:true, align:"center", color:"#0d2c63", text:"CONTRATO DE PRESTACIÓN DE SERVICIOS" },
+      { key:"", label:"", x:40, y:86, w:714, h:22, fontSize:11, align:"center", color:"#5a6b8c", text:"LuckyBase · luckybase.es" },
+      { key:"doc_today", label:"Fecha de firma: ", x:40, y:130, w:340, h:22, fontSize:12, align:"left", color:"#374765", text:"Fecha de firma: -" },
+      { key:"cliente_npedido", label:"Nº pedido: ", x:414, y:130, w:340, h:22, fontSize:12, align:"right", color:"#374765", text:"Nº pedido: -" },
+      { key:"", label:"", x:40, y:166, w:714, h:46, fontSize:12, align:"left", color:"#16213a", text:"De una parte, LuckyBase (en adelante, el Proveedor) y, de otra, el cliente identificado a continuación (en adelante, el Cliente), acuerdan los términos del presente contrato de prestación de servicios." },
+      { key:"", label:"", x:40, y:222, w:300, h:20, fontSize:11, bold:true, align:"left", color:"#0d2c63", text:"DATOS DEL CLIENTE" },
+      { key:"cliente_nombre", label:"Nombre: ", x:40, y:246, w:360, h:22, fontSize:12, align:"left", color:"#16213a", text:"Nombre: -" },
+      { key:"cliente_email", label:"Correo: ", x:40, y:270, w:360, h:22, fontSize:12, align:"left", color:"#16213a", text:"Correo: -" },
+      { key:"cliente_dominio", label:"Dominio: ", x:40, y:294, w:360, h:22, fontSize:12, align:"left", color:"#16213a", text:"Dominio: -" },
+      { key:"cliente_domprov", label:"Proveedor dominio: ", x:414, y:246, w:340, h:22, fontSize:12, align:"left", color:"#16213a", text:"Proveedor dominio: -" },
+      { key:"cliente_plan", label:"Plan contratado: ", x:414, y:270, w:340, h:22, fontSize:12, align:"left", color:"#16213a", text:"Plan contratado: -" },
+      { key:"cliente_periodicidad", label:"Duración / cobro: ", x:414, y:294, w:340, h:22, fontSize:12, align:"left", color:"#16213a", text:"Duración / cobro: -" },
+      { key:"cliente_cuota", label:"Importe acordado: ", x:40, y:332, w:340, h:24, fontSize:14, bold:true, align:"left", color:"#0d2c63", text:"Importe acordado: -" },
+      { key:"", label:"", x:40, y:382, w:300, h:20, fontSize:11, bold:true, align:"left", color:"#0d2c63", text:"CLÁUSULAS" },
+      { key:"", label:"", x:40, y:406, w:714, h:520, fontSize:11.5, align:"left", color:"#374765", text:"1. OBJETO. El Proveedor prestará los servicios de desarrollo, mantenimiento y/o automatización web descritos en el plan contratado.\n\n2. DURACIÓN. El presente contrato tendrá la duración indicada por la periodicidad de cobro, renovándose automáticamente salvo cancelación comunicada por escrito.\n\n3. OBLIGACIONES DEL PROVEEDOR. Mantener el servicio operativo, atender las solicitudes de soporte a través del panel de tickets y aplicar las actualizaciones necesarias para el correcto funcionamiento del plan contratado.\n\n4. OBLIGACIONES DEL CLIENTE. Facilitar la información y accesos necesarios, así como abonar el importe acordado en los plazos establecidos.\n\n5. PROTECCIÓN DE DATOS. Ambas partes se comprometen a tratar los datos personales conforme a la normativa vigente.\n\n6. RESOLUCIÓN. Cualquiera de las partes podrá resolver el contrato comunicándolo por escrito con al menos 15 días de antelación." },
+      { key:"", label:"", x:40, y:980, w:330, h:80, fontSize:12, align:"left", color:"#16213a", text:"Firma del Cliente:\n\n______________________" },
+      { key:"", label:"", x:424, y:980, w:330, h:80, fontSize:12, align:"left", color:"#16213a", text:"Firma de LuckyBase:\n\n______________________" }
+    ]
+  },
+  {
+    id: "welcome",
+    name: "Carta de bienvenida",
+    description: "Mensaje de alta de cliente con accesos y datos de su plan.",
+    backgroundCss: "linear-gradient(180deg,#ffffff 0,#ffffff 100%)",
+    fields: [
+      { key:"", label:"", x:40, y:40, w:714, h:42, fontSize:26, bold:true, align:"center", color:"#0d2c63", text:"¡Bienvenido/a a LuckyBase!" },
+      { key:"doc_today", label:"Fecha: ", x:40, y:96, w:714, h:22, fontSize:11, align:"center", color:"#5a6b8c", text:"Fecha: -" },
+      { key:"cliente_nombre", label:"Hola, ", x:40, y:150, w:714, h:28, fontSize:16, bold:true, align:"left", color:"#16213a", text:"Hola, -" },
+      { key:"", label:"", x:40, y:188, w:714, h:90, fontSize:13, align:"left", color:"#374765", text:"¡Gracias por confiar en LuckyBase! Tu alta como cliente ya está activa. A continuación encontrarás los datos principales de tu cuenta y de tu plan contratado." },
+      { key:"", label:"", x:40, y:300, w:300, h:20, fontSize:11, bold:true, align:"left", color:"#0d2c63", text:"DATOS DE ACCESO" },
+      { key:"cliente_usuario", label:"Usuario: ", x:40, y:324, w:360, h:22, fontSize:13, align:"left", color:"#16213a", text:"Usuario: -" },
+      { key:"cliente_email", label:"Correo: ", x:40, y:350, w:360, h:22, fontSize:13, align:"left", color:"#16213a", text:"Correo: -" },
+      { key:"cliente_panel", label:"Panel de cliente activo: ", x:40, y:376, w:360, h:22, fontSize:13, align:"left", color:"#16213a", text:"Panel de cliente activo: -" },
+      { key:"", label:"", x:414, y:300, w:300, h:20, fontSize:11, bold:true, align:"left", color:"#0d2c63", text:"TU PLAN" },
+      { key:"cliente_plan", label:"Plan: ", x:414, y:324, w:340, h:22, fontSize:13, align:"left", color:"#16213a", text:"Plan: -" },
+      { key:"cliente_dominio", label:"Dominio: ", x:414, y:350, w:340, h:22, fontSize:13, align:"left", color:"#16213a", text:"Dominio: -" },
+      { key:"cliente_proxpago", label:"Próximo pago: ", x:414, y:376, w:340, h:22, fontSize:13, align:"left", color:"#16213a", text:"Próximo pago: -" },
+      { key:"", label:"", x:40, y:440, w:714, h:130, fontSize:12.5, align:"left", color:"#374765", text:"Si tienes cualquier duda, puedes abrir un ticket de soporte desde tu panel de cliente y nuestro equipo te responderá lo antes posible. Estamos encantados de acompañarte en este nuevo paso para tu negocio." },
+      { key:"", label:"", x:40, y:600, w:400, h:60, fontSize:13, bold:true, align:"left", color:"#0d2c63", text:"Un saludo,\nEl equipo de LuckyBase" },
+      { key:"", label:"", x:40, y:1064, w:714, h:28, fontSize:10, align:"center", color:"#9aa6c2", text:"LuckyBase · luckybase.es" }
+    ]
+  },
+  {
+    id: "planchange",
+    name: "Aviso de cambio de plan",
+    description: "Comunicación de cambio de plan, fecha de efecto y nuevo importe.",
+    backgroundCss: "linear-gradient(180deg,#ffffff 0,#ffffff 100%)",
+    fields: [
+      { key:"", label:"", x:40, y:40, w:320, h:42, fontSize:26, bold:true, align:"left", color:"#0d2c63", text:"LuckyBase" },
+      { key:"", label:"", x:454, y:40, w:300, h:36, fontSize:20, bold:true, align:"right", color:"#0d2c63", text:"AVISO DE CAMBIO DE PLAN" },
+      { key:"doc_today", label:"Fecha: ", x:454, y:82, w:300, h:22, fontSize:12, align:"right", color:"#374765", text:"Fecha: -" },
+      { key:"cliente_nombre", label:"Cliente: ", x:40, y:166, w:360, h:24, fontSize:14, bold:true, align:"left", color:"#16213a", text:"Cliente: -" },
+      { key:"cliente_email", label:"Correo: ", x:40, y:192, w:360, h:22, fontSize:12, align:"left", color:"#374765", text:"Correo: -" },
+      { key:"cliente_dominio", label:"Dominio: ", x:40, y:216, w:360, h:22, fontSize:12, align:"left", color:"#374765", text:"Dominio: -" },
+      { key:"", label:"", x:40, y:270, w:330, h:20, fontSize:11, bold:true, align:"left", color:"#0d2c63", text:"PLAN ANTERIOR" },
+      { key:"", label:"Plan: ", x:40, y:294, w:330, h:24, fontSize:13, align:"left", color:"#16213a", text:"Plan: -" },
+      { key:"", label:"", x:424, y:270, w:330, h:20, fontSize:11, bold:true, align:"left", color:"#0d2c63", text:"PLAN NUEVO" },
+      { key:"cliente_plan", label:"Plan: ", x:424, y:294, w:330, h:24, fontSize:13, align:"left", color:"#16213a", text:"Plan: -" },
+      { key:"cliente_tipoplan", label:"Tipo de plan: ", x:424, y:322, w:330, h:24, fontSize:13, align:"left", color:"#16213a", text:"Tipo de plan: -" },
+      { key:"cliente_cuota", label:"Nuevo importe: ", x:40, y:360, w:360, h:26, fontSize:15, bold:true, align:"left", color:"#0d2c63", text:"Nuevo importe: -" },
+      { key:"cliente_proxpago", label:"Fecha de efecto / próximo pago: ", x:40, y:392, w:360, h:22, fontSize:12, align:"left", color:"#374765", text:"Fecha de efecto / próximo pago: -" },
+      { key:"", label:"", x:40, y:450, w:714, h:80, fontSize:12, align:"left", color:"#374765", text:"Te informamos del cambio de plan en tu cuenta de LuckyBase. Si tienes cualquier duda sobre este cambio o sobre la facturación, puedes contactarnos desde tu panel de tickets." },
+      { key:"", label:"", x:40, y:1064, w:714, h:28, fontSize:10, align:"center", color:"#9aa6c2", text:"LuckyBase · luckybase.es" }
+    ]
+  }
+]
+
+function loadScriptOnce_(url){
+  if(!window.__docScriptPromises){
+    window.__docScriptPromises = {}
+  }
+  if(window.__docScriptPromises[url]){
+    return window.__docScriptPromises[url]
+  }
+  const promise = new Promise((resolve, reject) => {
+    const script = document.createElement("script")
+    script.src = url
+    script.async = true
+    script.onload = () => resolve(true)
+    script.onerror = () => reject(new Error("No se pudo cargar el recurso: " + url))
+    document.head.appendChild(script)
+  })
+  window.__docScriptPromises[url] = promise
+  return promise
+}
+
+function ensureHtml2Canvas_(){
+  if(window.html2canvas){
+    return Promise.resolve(true)
+  }
+  return loadScriptOnce_("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js")
+}
+
+function ensureJsPdf_(){
+  if(window.jspdf && window.jspdf.jsPDF){
+    return Promise.resolve(true)
+  }
+  return loadScriptOnce_("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js")
+}
+
+function ensurePdfJs_(){
+  if(window.pdfjsLib){
+    return Promise.resolve(true)
+  }
+  return loadScriptOnce_("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js").then(() => {
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"
+    return true
+  })
+}
+
+function ensureMammoth_(){
+  if(window.mammoth){
+    return Promise.resolve(true)
+  }
+  return loadScriptOnce_("https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js")
+}
+
+function readDocsStore_(){
+  try{
+    const raw = localStorage.getItem(DOC_STORAGE_KEY)
+    if(!raw) return []
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : []
+  }catch(_){
+    return []
+  }
+}
+
+function writeDocsStore_(list){
+  localStorage.setItem(DOC_STORAGE_KEY, JSON.stringify(Array.isArray(list) ? list : []))
+}
+
+function genDocId_(){
+  return "doc_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8)
+}
+
+function buildDocTemplateGrid_(){
+  const grid = document.getElementById("docTemplateGrid")
+  if(!grid) return
+  if(grid.getAttribute("data-built") !== "1"){
+    grid.innerHTML = DOC_TEMPLATES.map((tpl) => {
+      return '<div class="doc-template-card" data-template-id="' + escapeHtml(tpl.id) + '"><strong>' + escapeHtml(tpl.name) + '</strong><span>' + escapeHtml(tpl.description) + '</span></div>'
+    }).join("")
+    grid.setAttribute("data-built", "1")
+    grid.querySelectorAll(".doc-template-card").forEach((card) => {
+      card.addEventListener("click", () => loadDocTemplate_(card.getAttribute("data-template-id")))
+    })
+  }
+  grid.querySelectorAll(".doc-template-card").forEach((card) => {
+    card.classList.toggle("active", !!currentDocState && card.getAttribute("data-template-id") === currentDocState.templateId)
+  })
+}
+
+function loadDocTemplate_(templateId){
+  const tpl = DOC_TEMPLATES.find((t) => t.id === templateId) || DOC_TEMPLATES[0]
+  currentDocState = {
+    id: null,
+    templateId: tpl.id,
+    name: tpl.name,
+    backgroundType: "none",
+    backgroundData: null,
+    backgroundHtml: null,
+    fields: tpl.fields.map((f) => Object.assign({}, f, { id: "f" + (docFieldIdSeq++) }))
+  }
+  docSelectedFieldId = null
+  const nameInput = document.getElementById("docNameInput")
+  if(nameInput) nameInput.value = tpl.name
+  setFeedback("docEditorFeedback", "")
+  setFeedback("docUploadFeedback", "")
+  renderDocCanvas_()
+  buildDocTemplateGrid_()
+}
+
+function createDocFieldElement_(field){
+  const wrap = document.createElement("div")
+  wrap.className = "doc-field" + (docSelectedFieldId === field.id ? " selected" : "")
+  wrap.id = "docfield-" + field.id
+  wrap.style.left = (field.x || 0) + "px"
+  wrap.style.top = (field.y || 0) + "px"
+  wrap.style.width = (field.w || 120) + "px"
+  wrap.style.height = (field.h || 30) + "px"
+
+  const bar = document.createElement("div")
+  bar.className = "doc-field-bar"
+  bar.addEventListener("mousedown", (event) => startDocFieldDrag_(event, field.id))
+
+  const body = document.createElement("div")
+  body.className = "doc-field-body"
+  body.contentEditable = "true"
+  body.style.fontSize = (field.fontSize || 13) + "px"
+  body.style.fontWeight = field.bold ? "800" : "500"
+  body.style.textAlign = field.align || "left"
+  body.style.color = field.color || "#16213a"
+  body.textContent = field.text || ""
+  body.addEventListener("mousedown", () => selectDocField_(field.id))
+  body.addEventListener("focus", () => selectDocField_(field.id))
+  body.addEventListener("input", () => {
+    field.text = body.textContent
+    if(docSelectedFieldId === field.id){
+      const textArea = document.getElementById("docFieldTextInput")
+      if(textArea && document.activeElement !== textArea){
+        textArea.value = field.text
+      }
+    }
+  })
+
+  const resize = document.createElement("div")
+  resize.className = "doc-field-resize"
+  resize.addEventListener("mousedown", (event) => startDocFieldResize_(event, field.id))
+
+  wrap.appendChild(bar)
+  wrap.appendChild(body)
+  wrap.appendChild(resize)
+  return wrap
+}
+
+function renderDocCanvas_(){
+  const canvas = document.getElementById("docCanvas")
+  if(!canvas || !currentDocState) return
+
+  canvas.classList.remove("doc-has-image-bg")
+  canvas.style.backgroundImage = ""
+  canvas.style.background = ""
+  canvas.innerHTML = ""
+
+  if(currentDocState.backgroundType === "image" && currentDocState.backgroundData){
+    canvas.style.backgroundImage = "url(" + currentDocState.backgroundData + ")"
+    canvas.classList.add("doc-has-image-bg")
+  }else if(currentDocState.backgroundType === "docx" && currentDocState.backgroundHtml){
+    const bgDiv = document.createElement("div")
+    bgDiv.className = "doc-docx-bg"
+    bgDiv.innerHTML = currentDocState.backgroundHtml
+    canvas.appendChild(bgDiv)
+  }else{
+    const tpl = DOC_TEMPLATES.find((t) => t.id === currentDocState.templateId)
+    canvas.style.background = (tpl && tpl.backgroundCss) || "#ffffff"
+  }
+
+  ;(currentDocState.fields || []).forEach((field) => {
+    canvas.appendChild(createDocFieldElement_(field))
+  })
+
+  buildDocTemplateGrid_()
+  syncDocFieldSidePanel_()
+}
+
+function selectDocField_(fieldId){
+  docSelectedFieldId = fieldId
+  document.querySelectorAll("#docCanvas .doc-field").forEach((el) => {
+    el.classList.toggle("selected", el.id === "docfield-" + fieldId)
+  })
+  syncDocFieldSidePanel_()
+}
+
+function syncDocFieldSidePanel_(){
+  const field = currentDocState && (currentDocState.fields || []).find((f) => f.id === docSelectedFieldId)
+  const textArea = document.getElementById("docFieldTextInput")
+  const fontSizeInput = document.getElementById("docFieldFontSize")
+  const colorInput = document.getElementById("docFieldColor")
+  const alignSelect = document.getElementById("docFieldAlign")
+  const boldSelect = document.getElementById("docFieldBold")
+  const deleteBtn = document.getElementById("docFieldDeleteBtn")
+  const controls = [textArea, fontSizeInput, colorInput, alignSelect, boldSelect, deleteBtn]
+  if(!field){
+    controls.forEach((el) => { if(el) el.disabled = true })
+    if(textArea) textArea.value = ""
+    return
+  }
+  controls.forEach((el) => { if(el) el.disabled = false })
+  if(textArea && document.activeElement !== textArea) textArea.value = field.text || ""
+  if(fontSizeInput) fontSizeInput.value = field.fontSize || 13
+  if(colorInput) colorInput.value = field.color || "#16213a"
+  if(alignSelect) alignSelect.value = field.align || "left"
+  if(boldSelect) boldSelect.value = field.bold ? "1" : "0"
+}
+
+function applyDocFieldControlsToSelected_(){
+  const field = currentDocState && (currentDocState.fields || []).find((f) => f.id === docSelectedFieldId)
+  if(!field) return
+  const textArea = document.getElementById("docFieldTextInput")
+  const fontSizeInput = document.getElementById("docFieldFontSize")
+  const colorInput = document.getElementById("docFieldColor")
+  const alignSelect = document.getElementById("docFieldAlign")
+  const boldSelect = document.getElementById("docFieldBold")
+  if(textArea) field.text = textArea.value
+  if(fontSizeInput) field.fontSize = Number(fontSizeInput.value || 13)
+  if(colorInput) field.color = colorInput.value
+  if(alignSelect) field.align = alignSelect.value
+  if(boldSelect) field.bold = boldSelect.value === "1"
+
+  const bodyEl = document.querySelector("#docfield-" + field.id + " .doc-field-body")
+  if(bodyEl){
+    bodyEl.style.fontSize = field.fontSize + "px"
+    bodyEl.style.fontWeight = field.bold ? "800" : "500"
+    bodyEl.style.textAlign = field.align
+    bodyEl.style.color = field.color
+    if(bodyEl.textContent !== field.text){
+      bodyEl.textContent = field.text
+    }
+  }
+}
+
+function deleteSelectedDocField_(){
+  if(!currentDocState || !docSelectedFieldId) return
+  currentDocState.fields = (currentDocState.fields || []).filter((f) => f.id !== docSelectedFieldId)
+  docSelectedFieldId = null
+  renderDocCanvas_()
+}
+
+function addNewDocField_(){
+  if(!currentDocState) return
+  const id = "f" + (docFieldIdSeq++)
+  currentDocState.fields.push({ id, key:"", label:"", x:40, y:40, w:220, h:34, fontSize:13, bold:false, align:"left", color:"#16213a", text:"Nuevo texto" })
+  docSelectedFieldId = id
+  renderDocCanvas_()
+}
+
+function startDocFieldDrag_(event, fieldId){
+  event.preventDefault()
+  selectDocField_(fieldId)
+  const field = currentDocState && (currentDocState.fields || []).find((f) => f.id === fieldId)
+  if(!field) return
+  docDragCtx = { mode:"move", fieldId, startX:event.clientX, startY:event.clientY, origX:field.x, origY:field.y }
+  document.addEventListener("mousemove", onDocFieldPointerMove_)
+  document.addEventListener("mouseup", onDocFieldPointerUp_)
+}
+
+function startDocFieldResize_(event, fieldId){
+  event.preventDefault()
+  event.stopPropagation()
+  selectDocField_(fieldId)
+  const field = currentDocState && (currentDocState.fields || []).find((f) => f.id === fieldId)
+  if(!field) return
+  docDragCtx = { mode:"resize", fieldId, startX:event.clientX, startY:event.clientY, origW:field.w, origH:field.h }
+  document.addEventListener("mousemove", onDocFieldPointerMove_)
+  document.addEventListener("mouseup", onDocFieldPointerUp_)
+}
+
+function onDocFieldPointerMove_(event){
+  if(!docDragCtx || !currentDocState) return
+  const field = (currentDocState.fields || []).find((f) => f.id === docDragCtx.fieldId)
+  if(!field) return
+  const dx = event.clientX - docDragCtx.startX
+  const dy = event.clientY - docDragCtx.startY
+  const canvas = document.getElementById("docCanvas")
+  const maxW = canvas ? canvas.offsetWidth : DOC_PAGE_W
+  const maxH = canvas ? Math.max(canvas.offsetHeight, DOC_PAGE_H) : DOC_PAGE_H
+
+  if(docDragCtx.mode === "move"){
+    field.x = Math.max(0, Math.min(maxW - (field.w || 40), docDragCtx.origX + dx))
+    field.y = Math.max(0, Math.min(maxH - (field.h || 20), docDragCtx.origY + dy))
+  }else{
+    field.w = Math.max(36, docDragCtx.origW + dx)
+    field.h = Math.max(24, docDragCtx.origH + dy)
+  }
+
+  const el = document.getElementById("docfield-" + field.id)
+  if(el){
+    el.style.left = field.x + "px"
+    el.style.top = field.y + "px"
+    el.style.width = field.w + "px"
+    el.style.height = field.h + "px"
+  }
+}
+
+function onDocFieldPointerUp_(){
+  docDragCtx = null
+  document.removeEventListener("mousemove", onDocFieldPointerMove_)
+  document.removeEventListener("mouseup", onDocFieldPointerUp_)
+}
+
+function handleBgImageUpload_(file){
+  if(!file || !currentDocState) return
+  const reader = new FileReader()
+  reader.onload = () => {
+    currentDocState.backgroundType = "image"
+    currentDocState.backgroundData = String(reader.result || "")
+    currentDocState.backgroundHtml = null
+    renderDocCanvas_()
+    setFeedback("docUploadFeedback", "Imagen cargada como fondo de la plantilla.", "ok")
+  }
+  reader.onerror = () => setFeedback("docUploadFeedback", "No se pudo leer la imagen.", "error")
+  reader.readAsDataURL(file)
+}
+
+function handleBgPdfUpload_(file){
+  if(!file || !currentDocState) return
+  setFeedback("docUploadFeedback", "Procesando PDF...")
+  ensurePdfJs_().then(() => file.arrayBuffer()).then((buf) => {
+    return window.pdfjsLib.getDocument({ data: buf }).promise
+  }).then((pdf) => pdf.getPage(1)).then((page) => {
+    const baseViewport = page.getViewport({ scale: 1 })
+    const scale = DOC_PAGE_W / baseViewport.width
+    const viewport = page.getViewport({ scale })
+    const canvasEl = document.createElement("canvas")
+    canvasEl.width = viewport.width
+    canvasEl.height = viewport.height
+    const ctx = canvasEl.getContext("2d")
+    return page.render({ canvasContext: ctx, viewport }).promise.then(() => canvasEl.toDataURL("image/png"))
+  }).then((dataUrl) => {
+    currentDocState.backgroundType = "image"
+    currentDocState.backgroundData = dataUrl
+    currentDocState.backgroundHtml = null
+    renderDocCanvas_()
+    setFeedback("docUploadFeedback", "Primera página del PDF cargada como fondo.", "ok")
+  }).catch((error) => {
+    setFeedback("docUploadFeedback", "No se pudo procesar el PDF (" + String(error && error.message || "ERROR") + ").", "error")
+  })
+}
+
+function handleBgDocxUpload_(file){
+  if(!file || !currentDocState) return
+  setFeedback("docUploadFeedback", "Procesando DOCX...")
+  ensureMammoth_().then(() => file.arrayBuffer()).then((buf) => {
+    return window.mammoth.convertToHtml({ arrayBuffer: buf })
+  }).then((result) => {
+    currentDocState.backgroundType = "docx"
+    currentDocState.backgroundHtml = String(result && result.value || "")
+    currentDocState.backgroundData = null
+    renderDocCanvas_()
+    setFeedback("docUploadFeedback", "DOCX cargado como capa de fondo. Usa los campos para superponer texto editable.", "ok")
+  }).catch((error) => {
+    setFeedback("docUploadFeedback", "No se pudo procesar el DOCX (" + String(error && error.message || "ERROR") + ").", "error")
+  })
+}
+
+function clearDocBackground_(){
+  if(!currentDocState) return
+  currentDocState.backgroundType = "none"
+  currentDocState.backgroundData = null
+  currentDocState.backgroundHtml = null
+  renderDocCanvas_()
+  setFeedback("docUploadFeedback", "Fondo eliminado. Se usa el diseño por defecto de la plantilla.", "ok")
+}
+
+function populateDocClientSourceSelect_(){
+  const sel = document.getElementById("docClientSource")
+  if(!sel) return
+  if(!clientsCache.length){
+    loadClients().then(() => populateDocClientSourceSelect_())
+    return
+  }
+  const current = sel.value
+  sel.innerHTML = '<option value="">— Ninguno —</option>' + clientsCache.map((c) => {
+    return '<option value="' + escapeHtml(String(c.rowIndex || "")) + '">' + escapeHtml(c.usuario || "-") + " · " + escapeHtml(c.nombre || "-") + '</option>'
+  }).join("")
+  if(current){
+    sel.value = current
+  }
+}
+
+function applyClientAutofill_(){
+  if(!currentDocState){
+    return
+  }
+  const sel = document.getElementById("docClientSource")
+  const rowIndex = Number(sel && sel.value || 0)
+  if(!rowIndex){
+    setFeedback("docGlobalFeedback", "Selecciona un cliente primero.", "error")
+    return
+  }
+  const client = clientsCache.find((c) => Number(c.rowIndex || 0) === rowIndex)
+  if(!client){
+    setFeedback("docGlobalFeedback", "Cliente no encontrado en la caché actual. Pulsa Actualizar en la pestaña Clientes.", "error")
+    return
+  }
+  const todayStr = formatDateOnly(new Date().toISOString())
+
+  ;(currentDocState.fields || []).forEach((field) => {
+    const key = String(field.key || "")
+    if(!key) return
+    if(key === "doc_today"){
+      field.text = (field.label || "") + todayStr
+      return
+    }
+    if(key.indexOf("cliente_") !== 0) return
+    const prop = key.slice(8)
+    let rawVal = client[prop]
+    if(prop === "fealta" || prop === "proxpago"){
+      rawVal = rawVal ? formatDateOnly(rawVal) : "-"
+    }else if(prop === "tipoplan"){
+      rawVal = normalizeTipoPlanValue_(rawVal)
+    }else if(prop === "panel"){
+      rawVal = normalizeText(rawVal) === "si" ? "Sí" : "No"
+    }
+    if(rawVal === undefined || rawVal === null || String(rawVal).trim() === ""){
+      rawVal = "-"
+    }
+    field.text = (field.label || "") + String(rawVal)
+  })
+
+  renderDocCanvas_()
+  setFeedback("docGlobalFeedback", "Datos del cliente aplicados a los campos de la plantilla.", "ok")
+}
+
+function renderDocSavedList_(){
+  const list = document.getElementById("docSavedList")
+  if(!list) return
+  docsCache = readDocsStore_()
+  if(!docsCache.length){
+    list.innerHTML = '<p class="feedback">Sin documentos guardados todavía.</p>'
+    return
+  }
+  const ordered = docsCache.slice().sort((a, b) => Number(b.updatedAt || 0) - Number(a.updatedAt || 0))
+  list.innerHTML = ordered.map((doc) => {
+    return '<div class="doc-saved-item" data-doc-id="' + escapeHtml(doc.id) + '">' +
+      '<div><strong>' + escapeHtml(doc.name || "Sin nombre") + '</strong><span>' + escapeHtml(formatDateTime(doc.updatedAt)) + '</span></div>' +
+      '<div class="row">' +
+        '<button class="btn-row-muted doc-mini-btn doc-load-btn" type="button" data-doc-id="' + escapeHtml(doc.id) + '">Abrir</button>' +
+        '<button class="btn-row-muted doc-mini-btn doc-dup-btn" type="button" data-doc-id="' + escapeHtml(doc.id) + '">Duplicar</button>' +
+        '<button class="btn-row-danger doc-mini-btn doc-del-btn" type="button" data-doc-id="' + escapeHtml(doc.id) + '">Eliminar</button>' +
+      '</div>' +
+    '</div>'
+  }).join("")
+
+  list.querySelectorAll(".doc-load-btn").forEach((btn) => {
+    btn.addEventListener("click", () => loadSavedDocument_(btn.getAttribute("data-doc-id")))
+  })
+  list.querySelectorAll(".doc-dup-btn").forEach((btn) => {
+    btn.addEventListener("click", () => duplicateSavedDocument_(btn.getAttribute("data-doc-id")))
+  })
+  list.querySelectorAll(".doc-del-btn").forEach((btn) => {
+    btn.addEventListener("click", () => deleteSavedDocument_(btn.getAttribute("data-doc-id")))
+  })
+}
+
+function loadSavedDocument_(id){
+  docsCache = readDocsStore_()
+  const doc = docsCache.find((d) => d.id === id)
+  if(!doc){
+    setFeedback("docEditorFeedback", "No se encontró el documento.", "error")
+    return
+  }
+  currentDocState = JSON.parse(JSON.stringify(doc))
+  docSelectedFieldId = null
+  const nameInput = document.getElementById("docNameInput")
+  if(nameInput) nameInput.value = currentDocState.name || ""
+  renderDocCanvas_()
+  setFeedback("docEditorFeedback", "Documento cargado: " + (currentDocState.name || ""), "ok")
+}
+
+function duplicateSavedDocument_(id){
+  loadSavedDocument_(id)
+  if(!currentDocState) return
+  currentDocState.id = null
+  currentDocState.name = (currentDocState.name || "Documento") + " (copia)"
+  const nameInput = document.getElementById("docNameInput")
+  if(nameInput) nameInput.value = currentDocState.name
+  setFeedback("docEditorFeedback", 'Duplicado listo. Pulsa "Guardar documento" para crear una copia nueva.', "ok")
+}
+
+function deleteSavedDocument_(id){
+  const confirmed = window.confirm("¿Eliminar este documento guardado? Esta acción no se puede deshacer.")
+  if(!confirmed) return
+  docsCache = readDocsStore_().filter((d) => d.id !== id)
+  writeDocsStore_(docsCache)
+  if(currentDocState && currentDocState.id === id){
+    loadDocTemplate_(DOC_TEMPLATES[0].id)
+  }
+  renderDocSavedList_()
+  setFeedback("docEditorFeedback", "Documento eliminado.", "ok")
+}
+
+function saveCurrentDocument_(asNew){
+  if(!currentDocState) return
+  const nameInput = document.getElementById("docNameInput")
+  const name = String(nameInput && nameInput.value || "").trim() || ("Documento " + formatDateTime(new Date().toISOString()))
+  const now = Date.now()
+  docsCache = readDocsStore_()
+  let id = currentDocState.id
+  let createdAt = currentDocState.createdAt
+  if(asNew || !id){
+    id = genDocId_()
+    createdAt = now
+  }
+  const record = {
+    id,
+    name,
+    templateId: currentDocState.templateId,
+    backgroundType: currentDocState.backgroundType,
+    backgroundData: currentDocState.backgroundData || null,
+    backgroundHtml: currentDocState.backgroundHtml || null,
+    fields: (currentDocState.fields || []).map((f) => Object.assign({}, f)),
+    createdAt: createdAt || now,
+    updatedAt: now
+  }
+  const idx = docsCache.findIndex((d) => d.id === id)
+  if(idx >= 0){
+    docsCache[idx] = record
+  }else{
+    docsCache.push(record)
+  }
+  try{
+    writeDocsStore_(docsCache)
+  }catch(_){
+    setFeedback("docEditorFeedback", "No se pudo guardar (almacenamiento local lleno o bloqueado por el navegador).", "error")
+    return
+  }
+  currentDocState.id = id
+  currentDocState.name = name
+  currentDocState.createdAt = record.createdAt
+  if(nameInput) nameInput.value = name
+  renderDocSavedList_()
+  setFeedback("docEditorFeedback", "Documento guardado correctamente.", "ok")
+}
+
+function exportDocCanvas_(type){
+  if(!currentDocState) return
+  setFeedback("docEditorFeedback", "Generando " + (type === "pdf" ? "PDF" : "imagen") + "...")
+  if(document.activeElement && typeof document.activeElement.blur === "function"){
+    document.activeElement.blur()
+  }
+  const canvas = document.getElementById("docCanvas")
+  if(!canvas) return
+  canvas.classList.add("doc-exporting")
+  document.querySelectorAll("#docCanvas .doc-field").forEach((el) => el.classList.remove("selected"))
+
+  ensureHtml2Canvas_().then(() => {
+    return window.html2canvas(canvas, { scale:2, backgroundColor:"#ffffff", useCORS:true })
+  }).then((renderedCanvas) => {
+    canvas.classList.remove("doc-exporting")
+    syncDocFieldSidePanel_()
+    const nameInput = document.getElementById("docNameInput")
+    const safeName = (String(nameInput && nameInput.value || "documento").trim() || "documento")
+      .replace(/[^a-z0-9 _-]/gi, "").replace(/\s+/g, "_") || "documento"
+
+    if(type === "png"){
+      const a = document.createElement("a")
+      a.href = renderedCanvas.toDataURL("image/png")
+      a.download = safeName + ".png"
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      setFeedback("docEditorFeedback", "Imagen descargada.", "ok")
+      return null
+    }
+
+    return ensureJsPdf_().then(() => {
+      const jsPDFCtor = window.jspdf.jsPDF
+      const widthPx = canvas.offsetWidth
+      const heightPx = canvas.offsetHeight
+      const pdf = new jsPDFCtor({ unit:"px", format:[widthPx, heightPx] })
+      const imgData = renderedCanvas.toDataURL("image/jpeg", 0.95)
+      pdf.addImage(imgData, "JPEG", 0, 0, widthPx, heightPx)
+      pdf.save(safeName + ".pdf")
+      setFeedback("docEditorFeedback", "PDF descargado.", "ok")
+    })
+  }).catch((error) => {
+    canvas.classList.remove("doc-exporting")
+    setFeedback("docEditorFeedback", "No se pudo generar el archivo (" + String(error && error.message || "ERROR") + ").", "error")
+  })
+}
+
+function bindDocsEvents_(){
+  const addFieldBtn = document.getElementById("docAddFieldBtn")
+  if(addFieldBtn) addFieldBtn.addEventListener("click", addNewDocField_)
+
+  const saveBtn = document.getElementById("docSaveBtn")
+  if(saveBtn) saveBtn.addEventListener("click", () => saveCurrentDocument_(false))
+
+  const saveAsBtn = document.getElementById("docSaveAsBtn")
+  if(saveAsBtn) saveAsBtn.addEventListener("click", () => saveCurrentDocument_(true))
+
+  const downloadPdfBtn = document.getElementById("docDownloadPdfBtn")
+  if(downloadPdfBtn) downloadPdfBtn.addEventListener("click", () => exportDocCanvas_("pdf"))
+
+  const downloadPngBtn = document.getElementById("docDownloadPngBtn")
+  if(downloadPngBtn) downloadPngBtn.addEventListener("click", () => exportDocCanvas_("png"))
+
+  const bgPdfInput = document.getElementById("docBgPdfInput")
+  if(bgPdfInput) bgPdfInput.addEventListener("change", (event) => {
+    const file = event.target.files && event.target.files[0]
+    if(file) handleBgPdfUpload_(file)
+    event.target.value = ""
+  })
+
+  const bgImageInput = document.getElementById("docBgImageInput")
+  if(bgImageInput) bgImageInput.addEventListener("change", (event) => {
+    const file = event.target.files && event.target.files[0]
+    if(file) handleBgImageUpload_(file)
+    event.target.value = ""
+  })
+
+  const bgDocxInput = document.getElementById("docBgDocxInput")
+  if(bgDocxInput) bgDocxInput.addEventListener("change", (event) => {
+    const file = event.target.files && event.target.files[0]
+    if(file) handleBgDocxUpload_(file)
+    event.target.value = ""
+  })
+
+  const bgClearBtn = document.getElementById("docBgClearBtn")
+  if(bgClearBtn) bgClearBtn.addEventListener("click", clearDocBackground_)
+
+  const autofillBtn = document.getElementById("docAutofillBtn")
+  if(autofillBtn) autofillBtn.addEventListener("click", applyClientAutofill_)
+
+  const fieldTextInput = document.getElementById("docFieldTextInput")
+  if(fieldTextInput) fieldTextInput.addEventListener("input", applyDocFieldControlsToSelected_)
+
+  const fieldFontSize = document.getElementById("docFieldFontSize")
+  if(fieldFontSize) fieldFontSize.addEventListener("input", applyDocFieldControlsToSelected_)
+
+  const fieldColor = document.getElementById("docFieldColor")
+  if(fieldColor) fieldColor.addEventListener("input", applyDocFieldControlsToSelected_)
+
+  const fieldAlign = document.getElementById("docFieldAlign")
+  if(fieldAlign) fieldAlign.addEventListener("change", applyDocFieldControlsToSelected_)
+
+  const fieldBold = document.getElementById("docFieldBold")
+  if(fieldBold) fieldBold.addEventListener("change", applyDocFieldControlsToSelected_)
+
+  const fieldDeleteBtn = document.getElementById("docFieldDeleteBtn")
+  if(fieldDeleteBtn) fieldDeleteBtn.addEventListener("click", deleteSelectedDocField_)
+}
+
+function initDocsTab_(){
+  buildDocTemplateGrid_()
+  renderDocSavedList_()
+  populateDocClientSourceSelect_()
+  if(!currentDocState){
+    loadDocTemplate_(DOC_TEMPLATES[0].id)
+  }else{
+    renderDocCanvas_()
+  }
+  syncDocFieldSidePanel_()
+}
+/* ===================== /Documentación ===================== */
+
 function bindEvents(){
+
   document.getElementById("loginForm").addEventListener("submit", handleLogin)
   document.getElementById("logoutBtn").addEventListener("click", handleLogout)
 
@@ -3699,6 +4835,7 @@ function bindEvents(){
   document.getElementById("auditEntityFilter").addEventListener("change", loadAuditLog)
 
   document.getElementById("cfRefreshBtn").addEventListener("click", loadCloudflareStatus)
+  bindDocsEvents_()
   syncCreateClientPlanFields("basic")
   syncBulkControls()
 }
