@@ -436,6 +436,68 @@ button:disabled{
   box-shadow:var(--shadow-soft);
 }
 
+.plan-summary-grid{
+  display:grid;
+  gap:10px;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  margin:10px 0 12px;
+}
+
+.plan-summary-card{
+  border:1px solid rgba(216,225,236,.95);
+  border-radius:14px;
+  padding:12px;
+  background:linear-gradient(180deg,#ffffff,#f8fafc);
+  box-shadow:var(--shadow-soft);
+}
+
+.plan-summary-top{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  align-items:flex-start;
+}
+
+.plan-summary-title{
+  font-size:13px;
+  font-weight:800;
+  color:#102033;
+  line-height:1.35;
+}
+
+.plan-summary-count{
+  font-family:"Sora","Avenir Next Condensed","Trebuchet MS",sans-serif;
+  font-size:28px;
+  font-weight:700;
+  color:#102033;
+  line-height:1;
+}
+
+.plan-summary-meta{
+  margin-top:6px;
+  font-size:12px;
+  color:#5d6f84;
+  line-height:1.45;
+}
+
+.plan-summary-badges{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  margin-top:8px;
+}
+
+.plan-summary-badge{
+  display:inline-flex;
+  align-items:center;
+  border-radius:999px;
+  padding:4px 8px;
+  font-size:11px;
+  font-weight:700;
+  background:#eef5ff;
+  color:#1d4ed8;
+}
+
 .metric-label{
   display:block;
   font-size:11px;
@@ -611,7 +673,7 @@ button:disabled{
 
 .data-table{
   width:100%;
-  min-width:920px;
+  min-width:1060px;
   border-collapse:collapse;
   background:#ffffff;
 }
@@ -1265,15 +1327,15 @@ body{
 body::after{
   content:"";
   position:fixed;
-  right:-160px;
-  top:64px;
-  width:560px;
-  height:560px;
+  right:-260px;
+  top:120px;
+  width:720px;
+  height:720px;
   border-radius:50%;
-  background:radial-gradient(circle, rgba(37,99,235,.14) 0%, rgba(14,165,233,.08) 42%, transparent 72%);
-  filter:blur(10px);
+  background:radial-gradient(circle, rgba(15,23,42,.08) 0%, rgba(15,76,129,.05) 40%, transparent 76%);
+  filter:blur(24px);
   pointer-events:none;
-  opacity:.85;
+  opacity:.42;
 }
 
 ::selection{
@@ -1288,26 +1350,26 @@ main{
 
 h1{
   font-size:clamp(32px, 3vw, 48px);
-  letter-spacing:-.035em;
+  letter-spacing:-.045em;
   line-height:1.04;
-  background:linear-gradient(135deg, #0f172a 0%, #1d4ed8 44%, #0ea5e9 100%);
+  background:linear-gradient(135deg, #0f172a 0%, #334155 48%, #0f4c81 100%);
   -webkit-background-clip:text;
   background-clip:text;
   color:transparent;
-  text-shadow:0 10px 34px rgba(37,99,235,.08);
+  text-shadow:none;
 }
 
 .headline-subtitle{
   max-width:780px;
   padding-bottom:16px;
   border-bottom:1px solid rgba(216,225,236,.9);
-  color:#4b627d;
+  color:#5b6778;
 }
 
 .card{
   border:1px solid rgba(216,225,236,.88);
-  background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,250,252,.96));
-  box-shadow:0 18px 48px rgba(16,32,51,.08);
+  background:linear-gradient(180deg, rgba(255,255,255,.99), rgba(249,250,252,.97));
+  box-shadow:0 14px 34px rgba(15,23,42,.05);
   backdrop-filter:blur(10px);
 }
 
@@ -1321,7 +1383,7 @@ h1{
 }
 
 .card:hover{
-  box-shadow:0 24px 64px rgba(16,32,51,.12);
+  box-shadow:0 22px 48px rgba(15,23,42,.08);
 }
 
 input,select,textarea{
@@ -1331,24 +1393,24 @@ input,select,textarea{
 }
 
 input:focus,select:focus,textarea:focus{
-  border-color:rgba(37,99,235,.95);
-  box-shadow:0 0 0 4px rgba(37,99,235,.12), inset 0 1px 0 rgba(255,255,255,.95);
+  border-color:rgba(15,76,129,.95);
+  box-shadow:0 0 0 4px rgba(15,76,129,.10), inset 0 1px 0 rgba(255,255,255,.95);
 }
 
 .btn-primary{
-  background:linear-gradient(135deg, #1d4ed8, #3b82f6 58%, #0ea5e9);
-  box-shadow:0 14px 28px rgba(37,99,235,.20);
+  background:#0f4c81;
+  box-shadow:0 12px 22px rgba(15,76,129,.14);
 }
 
 .btn-muted{
-  background:linear-gradient(180deg, #ffffff, #f3f7fb);
-  border-color:#d6dfeb;
-  color:#243143;
+  background:#ffffff;
+  border-color:#d7e0ea;
+  color:#243244;
 }
 
 .btn-danger{
-  background:linear-gradient(135deg, #ef4444, #dc2626);
-  box-shadow:0 12px 24px rgba(220,38,38,.16);
+  background:#b91c1c;
+  box-shadow:0 12px 24px rgba(185,28,28,.10);
 }
 
 .tabs{
@@ -1362,8 +1424,8 @@ input:focus,select:focus,textarea:focus{
 }
 
 .tab-btn.active{
-  background:linear-gradient(135deg, #1d4ed8, #3b82f6 64%, #0ea5e9);
-  box-shadow:0 12px 26px rgba(37,99,235,.18);
+  background:#0f4c81;
+  box-shadow:0 10px 22px rgba(15,76,129,.12);
 }
 
 .hero-strip,
@@ -1379,14 +1441,14 @@ input:focus,select:focus,textarea:focus{
 
 .hero-strip{
   background:
-    radial-gradient(360px 150px at 92% 12%, rgba(37,99,235,.10), transparent 70%),
+    radial-gradient(360px 150px at 92% 12%, rgba(15,76,129,.05), transparent 70%),
     linear-gradient(165deg, #ffffff, #f7fbff);
   border-color:rgba(216,225,236,.96);
 }
 
 .metric-card{
   border-color:rgba(216,225,236,.94);
-  background:linear-gradient(180deg, #ffffff, #f7faff);
+  background:linear-gradient(180deg, #ffffff, #f8fafc);
 }
 
 .metric-value{
@@ -1398,7 +1460,7 @@ input:focus,select:focus,textarea:focus{
 .ticket-detail,
 .cloud-item,
 .reply-grid{
-  background:linear-gradient(180deg, #ffffff, #f8fbff);
+  background:linear-gradient(180deg, #ffffff, #f9fbfd);
   border-color:rgba(216,225,236,.95);
 }
 
@@ -1407,12 +1469,12 @@ input:focus,select:focus,textarea:focus{
 }
 
 .data-table th{
-  background:#f8fafc;
-  color:#5c6f86;
+  background:#f7f9fc;
+  color:#607084;
 }
 
 .data-table tr:hover td{
-  background:#f4f8ff;
+  background:#f7fbff;
 }
 
 .ticket{
@@ -1421,7 +1483,7 @@ input:focus,select:focus,textarea:focus{
 }
 
 .ticket::before{
-  background:radial-gradient(circle, rgba(37,99,235,.10), transparent 70%);
+  background:radial-gradient(circle, rgba(15,76,129,.08), transparent 70%);
 }
 
 .ticket-top{
@@ -1437,7 +1499,7 @@ input:focus,select:focus,textarea:focus{
 
 .ticket.has-new{
   border-color:#b8d2ff;
-  box-shadow:0 0 0 1px rgba(37,99,235,.10), 0 18px 32px rgba(37,99,235,.10);
+  box-shadow:0 0 0 1px rgba(15,76,129,.08), 0 18px 32px rgba(15,76,129,.08);
 }
 
 .tag{
@@ -1467,8 +1529,63 @@ input:focus,select:focus,textarea:focus{
   width:120px;
   height:120px;
   border-radius:50%;
-  background:radial-gradient(circle, rgba(37,99,235,.08), transparent 70%);
+  background:radial-gradient(circle, rgba(15,76,129,.06), transparent 70%);
   pointer-events:none;
+}
+
+.tabs-vertical .tab-btn.active,
+.tab-btn.active{
+  letter-spacing:.12px;
+}
+
+.tabs-vertical .tab-btn{
+  border-color:#d7e0ea;
+  background:#ffffff;
+  color:#2b394a;
+}
+
+.tabs-vertical .tab-btn:hover{
+  background:#f7f9fc;
+}
+
+.panel-value,
+.metric-value,
+.ticket-title,
+.section-title,
+.topbar h2,
+.brand-block h2{
+  color:#0f172a;
+}
+
+.session-info,
+.headline-subtitle,
+.brand-block p,
+.hero-copy,
+.modal-sub,
+.metric-label,
+.panel-label,
+.ticket-meta,
+.quick-pill{
+  color:#607084;
+}
+
+.quick-pill{
+  text-transform:uppercase;
+  letter-spacing:.28px;
+  background:#f8fafc;
+}
+
+.brand-kicker,
+.hero-kicker{
+  letter-spacing:.36px;
+}
+
+.data-table th{
+  color:#5b6778;
+}
+
+.empty-state{
+  color:#607084;
 }
 
 .doc-toolbar,
@@ -1646,10 +1763,10 @@ input:focus,select:focus,textarea:focus{
               <div id="clientCreateFeedback" class="feedback"></div>
             </form>
             <div class="panel-tools" style="margin-top:0;">
-              <label class="search-wrap">Buscar
-                <input id="clientsSearch" type="search" placeholder="Nombre, usuario, correo o plan" autocomplete="off">
-              </label>
-              <label>Plan
+                <label class="search-wrap">Buscar
+                  <input id="clientsSearch" type="search" placeholder="Nombre, usuario, correo, pedido o plan" autocomplete="off">
+                </label>
+              <label>Plan / tipo
                 <select id="clientsPlanFilter"><option value="">Todos</option></select>
               </label>
               <label>Pago
@@ -1660,6 +1777,7 @@ input:focus,select:focus,textarea:focus{
                 </select>
               </label>
             </div>
+            <div id="clientsPlanSummary" class="plan-summary-grid"></div>
             <div class="client-manage-card" style="margin-top:10px;">
               <div class="client-manage-head">
                 <strong>Acciones masivas</strong>
@@ -1698,6 +1816,7 @@ input:focus,select:focus,textarea:focus{
                     <th>Correo</th>
                     <th>Plan</th>
                     <th>Tipo plan</th>
+                    <th>Nº pedido</th>
                     <th>Flujos activos</th>
                     <th>Flujos inactivos</th>
                     <th>Dom. prov.</th>
@@ -2563,23 +2682,113 @@ async function loadDashboard(){
 }
 
 function buildClientsPlanFilterOptions(clients){
-  const set = new Set()
+  const map = new Map()
   ;(clients || []).forEach((c) => {
-    const plan = String(c.plan || "").trim()
-    if(plan) set.add(plan)
+    const key = getClientPlanKey_(c)
+    if(!key || key === "|"){
+      return
+    }
+    if(!map.has(key)){
+      map.set(key, {
+        value: key,
+        label: getClientPlanLabel_(c)
+      })
+    }
   })
-  return Array.from(set).sort((a,b) => a.localeCompare(b, "es"))
+  return Array.from(map.values()).sort((a, b) => a.label.localeCompare(b.label, "es"))
+}
+
+function getClientPlanKey_(client){
+  const tipoPlan = normalizeText(client && client.tipoplan ? client.tipoplan : "")
+  const plan = normalizeText(client && client.plan ? client.plan : "")
+  return tipoPlan + "|" + plan
+}
+
+function getClientPlanLabel_(client){
+  const tipoPlan = String(client && client.tipoplan ? client.tipoplan : "").trim() || "Sin tipo"
+  const plan = String(client && client.plan ? client.plan : "").trim() || "Sin plan"
+  return tipoPlan + " · " + plan
+}
+
+function sortClientsByPlan_(clients){
+  return (Array.isArray(clients) ? clients : []).slice().sort((a, b) => {
+    const typeCmp = String(a.tipoplan || "").localeCompare(String(b.tipoplan || ""), "es")
+    if(typeCmp) return typeCmp
+    const planCmp = String(a.plan || "").localeCompare(String(b.plan || ""), "es")
+    if(planCmp) return planCmp
+    const orderCmp = String(a.npedido || "").localeCompare(String(b.npedido || ""), "es")
+    if(orderCmp) return orderCmp
+    return String(a.usuario || "").localeCompare(String(b.usuario || ""), "es")
+  })
+}
+
+function buildClientsPlanSummary(clients){
+  const list = Array.isArray(clients) ? clients : []
+  const summaryMap = new Map()
+  let abonados = 0
+  let noAbonados = 0
+  let panelOn = 0
+
+  list.forEach((client) => {
+    const key = getClientPlanKey_(client)
+    const current = summaryMap.get(key) || {
+      key,
+      label: getClientPlanLabel_(client),
+      count: 0,
+      abonados: 0,
+      noAbonados: 0,
+      pedidos: []
+    }
+    current.count += 1
+    const payNorm = normalizeText(client && client.pagado ? client.pagado : "")
+    if(payNorm === "abonado"){
+      current.abonados += 1
+      abonados += 1
+    }else{
+      current.noAbonados += 1
+      noAbonados += 1
+    }
+    if(normalizeText(client && client.panel ? client.panel : "") === "si"){
+      panelOn += 1
+    }
+    const pedido = String(client && client.npedido ? client.npedido : "").trim()
+    if(pedido){
+      current.pedidos.push(pedido)
+    }
+    summaryMap.set(key, current)
+  })
+
+  return {
+    total: list.length,
+    abonados,
+    noAbonados,
+    panelOn,
+    combos: Array.from(summaryMap.values()).sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, "es"))
+  }
+}
+
+function renderClientsPlanSummary(clients){
+  const summaryEl = document.getElementById("clientsPlanSummary")
+  if(!summaryEl){
+    return
+  }
+  const summary = buildClientsPlanSummary(clients)
+  const topCombos = summary.combos.slice(0, 4)
+  summaryEl.innerHTML = [
+    '<div class="plan-summary-card"><div class="plan-summary-top"><div><div class="plan-summary-title">Planes visibles</div><div class="plan-summary-meta">Combinaciones tipo plan + plan en la tabla filtrada.</div></div><div class="plan-summary-count">' + escapeHtml(String(summary.total || 0)) + '</div></div><div class="plan-summary-badges"><span class="plan-summary-badge">Abonados: ' + escapeHtml(String(summary.abonados || 0)) + '</span><span class="plan-summary-badge">No abonados: ' + escapeHtml(String(summary.noAbonados || 0)) + '</span><span class="plan-summary-badge">Panel en Sí: ' + escapeHtml(String(summary.panelOn || 0)) + '</span></div></div>',
+    '<div class="plan-summary-card"><div class="plan-summary-top"><div><div class="plan-summary-title">Combinaciones activas</div><div class="plan-summary-meta">Las más presentes en tu selección actual.</div></div><div class="plan-summary-count">' + escapeHtml(String(summary.combos.length || 0)) + '</div></div>' + (topCombos.length ? '<div class="plan-summary-badges">' + topCombos.map((combo) => '<span class="plan-summary-badge">' + escapeHtml(combo.label) + ' · ' + escapeHtml(String(combo.count || 0)) + (combo.pedidos && combo.pedidos.length ? ' · ' + escapeHtml(combo.pedidos.slice(0, 2).join(", ")) : '') + '</span>').join("") + '</div>' : '<div class="plan-summary-meta">No hay combinaciones para mostrar.</div>') + '</div>'
+  ].join("")
 }
 
 function renderClientsTable(clients){
   const tbody = document.getElementById("clientsTableBody")
   const list = Array.isArray(clients) ? clients : []
   if(!list.length){
-    tbody.innerHTML = '<tr><td colspan="14" class="empty-state">No hay clientes con ese filtro.</td></tr>'
+    tbody.innerHTML = '<tr><td colspan="15" class="empty-state">No hay clientes con ese filtro.</td></tr>'
     return
   }
 
-  tbody.innerHTML = list.map((c) => {
+  tbody.innerHTML = sortClientsByPlan_(list).map((c) => {
     const rowIndex = Number(c.rowIndex || 0)
     const panelEnabled = normalizeText(c.panel) === "si"
     const panelState = panelEnabled ? "Sí" : "No"
@@ -2594,6 +2803,7 @@ function renderClientsTable(clients){
       '<td>' + escapeHtml(c.email || "-") + '</td>' +
       '<td>' + escapeHtml(c.plan || "-") + '</td>' +
       '<td>' + escapeHtml(c.tipoplan || "-") + '</td>' +
+      '<td>' + escapeHtml(c.npedido || "-") + '</td>' +
       '<td>' + escapeHtml(c.flujosactivos || "-") + '</td>' +
       '<td>' + escapeHtml(c.flujosinactivos || "-") + '</td>' +
       '<td>' + escapeHtml(c.domprov || "-") + '</td>' +
@@ -2622,7 +2832,7 @@ function applyClientFilters(){
   const paymentFilter = normalizeText(document.getElementById("clientsPaymentFilter").value || "")
 
   const filtered = clientsCache.filter((c) => {
-    const planNorm = normalizeText(c.plan)
+    const planNorm = getClientPlanKey_(c)
     const payNorm = normalizeText(c.pagado)
     if(planFilter && planNorm !== planFilter) return false
     if(paymentFilter === "abonado" && payNorm !== "abonado") return false
@@ -2635,6 +2845,7 @@ function applyClientFilters(){
       c.email,
       c.plan,
       c.tipoplan,
+      c.npedido,
       c.flujosactivos,
       c.flujosinactivos,
       c.domprov,
@@ -2647,7 +2858,8 @@ function applyClientFilters(){
   })
 
   renderClientsTable(filtered)
-  setFeedback("clientsFeedback", "Mostrando " + filtered.length + " cliente(s).")
+  renderClientsPlanSummary(filtered)
+  setFeedback("clientsFeedback", "Mostrando " + filtered.length + " fila(s) por plan.")
 }
 
 async function loadClients(){
@@ -2667,7 +2879,7 @@ async function loadClients(){
       return
     }
 
-    clientsCache = Array.isArray(result.clients) ? result.clients : []
+    clientsCache = sortClientsByPlan_(Array.isArray(result.clients) ? result.clients : [])
     const knownRows = {}
     clientsCache.forEach((c) => {
       knownRows[Number(c.rowIndex || 0)] = true
@@ -2681,8 +2893,8 @@ async function loadClients(){
     const planFilterEl = document.getElementById("clientsPlanFilter")
     const currentPlan = String(planFilterEl.value || "")
     planFilterEl.innerHTML = '<option value="">Todos</option>' + plans.map((p) => {
-      const selected = currentPlan && normalizeText(currentPlan) === normalizeText(p) ? ' selected' : ''
-      return '<option value="' + escapeHtml(p) + '"' + selected + '>' + escapeHtml(p) + '</option>'
+      const selected = currentPlan && normalizeText(currentPlan) === normalizeText(p.value) ? ' selected' : ''
+      return '<option value="' + escapeHtml(p.value) + '"' + selected + '>' + escapeHtml(p.label) + '</option>'
     }).join("")
 
     applyClientFilters()
@@ -3147,23 +3359,33 @@ function renderClient360(result){
   const client = result.client || {}
   const plans = Array.isArray(result.planes) ? result.planes : []
   const tickets = Array.isArray(result.tickets) ? result.tickets : []
-  summaryEl.textContent = "Planes: " + String(client.totalPlanes || plans.length || 0) +
+  const activePlanKey = normalizeKey(client.plan || client.npedido || "")
+  const activePlan = plans.find((plan) => {
+    return normalizeKey(plan.plan || plan.npedido || "") === activePlanKey ||
+      normalizeKey(String(plan.rowIndex || "")) === normalizeKey(String(client.rowIndex || ""))
+  }) || plans[0] || null
+  summaryEl.textContent = "Planes relacionados: " + String(client.totalPlanes || plans.length || 0) +
     " · Tickets totales: " + String(client.totalTickets || tickets.length || 0) +
-    " · Tickets abiertos: " + String(client.openTickets || 0)
+    " · Tickets abiertos: " + String(client.openTickets || 0) +
+    (activePlan ? (" · Plan activo: " + String(activePlan.plan || client.plan || "-")) : "")
   summaryEl.className = "feedback ok"
 
   plansEl.innerHTML = plans.length
     ? plans.map((plan) => {
       const planType = normalizeTipoPlanValue_(plan.tipoplan || "")
       const isAuto = planType === "LuckyAuto"
+      const isCurrent = Number(plan.rowIndex || 0) === Number(client.rowIndex || 0)
       const flowSummary = isAuto
         ? (' · Flujos: ' + String(plan.flujosactivos || "0") + ' activos / ' + String(plan.flujosinactivos || "0") + ' inactivos')
         : ""
       const periodicidad = normalizeBillingPeriodicityValue_(plan.periodicidad || "")
       const periodicidadLabel = periodicidad === "anual" ? "Anual" : "Mensual"
-      return '<div class="msg client">' +
-        '<div class="msg-head"><strong>' + escapeHtml(plan.plan || "-") + '</strong><span>' + escapeHtml(plan.npedido || "-") + '</span></div>' +
-        '<div class="msg-body">Tipo: ' + escapeHtml(planType || "-") + ' · Cobro: ' + escapeHtml(periodicidadLabel) + ' · Dominio: ' + escapeHtml(plan.dominio || "-") + ' · Próximo pago: ' + escapeHtml(plan.proxpago || "-") + flowSummary + '</div>' +
+      return '<div class="msg client ' + (isCurrent ? 'on' : '') + '">' +
+        '<div class="msg-head"><strong>' + escapeHtml(plan.plan || "-") + '</strong><span>Fila ' + escapeHtml(String(plan.rowIndex || "-")) + '</span></div>' +
+        '<div class="msg-body">Tipo: ' + escapeHtml(planType || "-") + ' · Cobro: ' + escapeHtml(periodicidadLabel) + ' · Dominio: ' + escapeHtml(plan.dominio || "-") + ' · Próximo pago: ' + escapeHtml(plan.proxpago || "-") + flowSummary + '<br>Pedido: ' + escapeHtml(plan.npedido || "-") + ' · Cuota: ' + escapeHtml(formatEuro(plan.cuota || "")) + ' · Consultas: ' + escapeHtml(plan.consultasocambiosrestantes || "-") + '</div>' +
+        '<div class="actions" style="margin-top:10px">' +
+          '<button type="button" class="btn alt" data-load-plan-row="' + escapeHtml(String(plan.rowIndex || "")) + '">Editar esta fila</button>' +
+        '</div>' +
       '</div>'
     }).join("")
     : '<p class="feedback">Sin planes.</p>'
@@ -3172,10 +3394,22 @@ function renderClient360(result){
     ? tickets.map((ticket) => {
       return '<div class="msg admin">' +
         '<div class="msg-head"><strong>' + escapeHtml(ticket.ticketId || "-") + '</strong><span>' + escapeHtml(ticket.estado || "-") + '</span></div>' +
-        '<div class="msg-body">' + escapeHtml(ticket.asunto || "-") + '<br>Creado: ' + escapeHtml(formatDateTime(ticket.createdAt)) + '</div>' +
+        '<div class="msg-body">' + escapeHtml(ticket.asunto || "-") + '<br>Plan: ' + escapeHtml(ticket.ticketPlan || ticket.ticketPlanType || "-") + ' · Pedido: ' + escapeHtml(ticket.ticketPlanOrder || ticket.ticketPlanId || "-") + '<br>Creado: ' + escapeHtml(formatDateTime(ticket.createdAt)) + '</div>' +
       '</div>'
     }).join("")
     : '<p class="feedback">Sin tickets.</p>'
+
+  plansEl.querySelectorAll("[data-load-plan-row]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const rowIndex = Number(button.getAttribute("data-load-plan-row") || 0)
+      const selectedPlan = plans.find((plan) => Number(plan.rowIndex || 0) === rowIndex)
+      if(!selectedPlan){
+        return
+      }
+      fillClientEditForm(selectedPlan)
+      setFeedback("clientEditFeedback", "Cargando la fila del plan seleccionado en el editor...", "ok")
+    })
+  })
 }
 
 async function loadClient360(rowIndex, usuario, email){
@@ -3234,7 +3468,9 @@ function fillClientEditForm(client){
   document.getElementById("editClientNpedido").value = String(data.npedido || "")
   document.getElementById("editClientProxpago").value = String(data.proxpago || "")
   document.getElementById("clientDetailSubtitle").textContent =
-    "Fila " + String(data.rowIndex || "-") + " · " + String(data.usuario || "-")
+    "Fila " + String(data.rowIndex || "-") + " · " + String(data.usuario || "-") +
+    " · Plan " + String(data.plan || "-") +
+    " · Pedido " + String(data.npedido || "-")
 }
 
 function readEditClientFormData(){
